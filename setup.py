@@ -28,7 +28,7 @@ def find_readme(*paths):
         return f.read()
 
 
-version = find_version('cli', '__init__.py')
+version = find_version('kae', '__init__.py')
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
@@ -41,6 +41,7 @@ requires = [
     'reprint==0.5.1',
     'requests==2.18.4',
     'tqdm==4.23.4',
+    'sseclient-py==1.7',
 ]
 root_dir = dirname(abspath(__file__))
 

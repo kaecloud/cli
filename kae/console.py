@@ -6,10 +6,12 @@
 """
 from __future__ import print_function, division, absolute_import
 import six
+from six.moves.urllib.parse import urljoin
 import os
 import pickle
 import logging
 import json as jsonlib
+import sseclient
 from requests import Session
 from .errors import ConsoleAPIError
 
@@ -17,14 +19,18 @@ logger = logging.getLogger(__name__)
 
 
 class ConsoleAPI:
-    def __init__(self, host, version='v1', timeout=None, password='', auth_token='', cookie_dir='~/.kae'):
+    def __init__(self, host, version='v1', timeout=None,
+                 password='', auth_token='', cookie_dir='~/.kae',
+                 cluster='default'):
         self.host = host
         self.version = version
         self.timeout = timeout
         self.auth_token = auth_token
         self.cookie_dir = os.path.expanduser(cookie_dir)
+        self.cluster = cluster
 
-        self.base = '%s/api/%s' % (self.host, version)
+        self.host = host
+        self.base = '%s/api/%s/' % (self.host, version)
         self.session = Session()
         self.session.headers.update({'X-Access-Token': auth_token})
 
@@ -46,9 +52,12 @@ class ConsoleAPI:
         except:
             return None
 
+    def set_cluster(self, cluster):
+        self.cluster = cluster
+
     def request(self, path, method='GET', params=None, data=None, json=None, **kwargs):
         """Wrap around requests.request method"""
-        url = self.base + path
+        url = urljoin(self.base, path)
         params = params or {}
         cookies = self._load_cookie() or {}
         resp = self.session.request(url=url,
@@ -71,7 +80,7 @@ class ConsoleAPI:
         return response
 
     def request_stream(self, path, method='GET', params=None, data=None, json=None, **kwargs):
-        url = self.base + path
+        url = urljoin(self.base, path)
         params = params or {}
         cookies = self._load_cookie() or {}
         resp = self.session.request(url=url,
@@ -93,42 +102,83 @@ class ConsoleAPI:
             except (ValueError, TypeError):
                 raise ConsoleAPIError(500, line)
 
+    def request_sse(self, path, method='GET', params=None, data=None, json=None, **kwargs):
+        url = urljoin(self.base, path)
+        params = params or {}
+        cookies = self._load_cookie() or {}
+        resp = self.session.request(url=url,
+                                    method=method,
+                                    params=params,
+                                    cookies=cookies,
+                                    data=data,
+                                    json=json,
+                                    timeout=self.timeout,
+                                    stream=True)
+
+        code = resp.status_code
+        if code != 200:
+            raise ConsoleAPIError(code, resp.text)
+
+        client = sseclient.SSEClient(resp)
+        for event in client.events():
+            try:
+                yield jsonlib.loads(event.data)
+            except (ValueError, TypeError):
+                raise ConsoleAPIError(500, str(event))
+
     def get_app(self, appname):
-        return self.request('/app/%s' % appname)
+        return self.request('app/%s' % appname)
 
     def delete_app(self, appname):
-        return self.request('/app/%s' % appname, method='DELETE')
+        return self.request('app/%s' % appname, method='DELETE')
 
-    def get_app_pods(self, appname):
-        return self.request('/app/%s/pods' % appname)
+    def get_app_pods(self, appname, watch=False):
+        params = {
+            'cluster': self.cluster,
+        }
+        if watch is False:
+            return self.request('app/%s/pods' % appname, params=params)
+        else:
+            return self.request_sse('app/%s/pods/events' % appname, params=params)
 
     def get_app_releases(self, appname):
-        return self.request('/app/%s/releases' % appname)
+        return self.request('app/%s/releases' % appname)
 
-    def get_app_deployments(self, appname):
-        return self.request('/app/%s/deployments' % appname)
+    def get_app_deployment(self, appname):
+        params = {
+            'cluster': self.cluster,
+        }
+        return self.request('app/%s/deployment' % appname, params=params)
 
     def get_release(self, appname, tag):
-        return self.request('/app/%s/version/%s' % (appname, tag))
+        return self.request('app/%s/version/%s' % (appname, tag))
 
     def get_secret(self, appname):
-        return self.request('/app/%s/secret' % appname)
+        params = {
+            'cluster': self.cluster,
+        }
+        return self.request('app/%s/secret' % appname, params=params)
 
     def set_secret(self, appname, data):
         payload = {
+            'cluster': self.cluster,
             'data': data,
         }
-        return self.request('/app/%s/secret' % appname, method="POST", json=payload)
+        return self.request('app/%s/secret' % appname, method="POST", json=payload)
 
     def get_config(self, appname):
-        return self.request('/app/%s/configmap' % appname)
+        params = {
+            'cluster': self.cluster,
+        }
+        return self.request('app/%s/configmap' % appname, params=params)
 
     def set_config(self, appname, config_name, data):
         payload = {
+            'cluster': self.cluster,
             'config_name': config_name,
             'data': data,
         }
-        return self.request('/app/%s/configmap' % appname, method="POST", json=payload)
+        return self.request('app/%s/configmap' % appname, method="POST", json=payload)
 
     def register_release(self, appname, tag, git, specs_text, branch=None):
         payload = {
@@ -138,22 +188,24 @@ class ConsoleAPI:
             'specs_text': specs_text,
             'branch': branch,
         }
-        return self.request('/app/register', method='POST', json=payload)
+        return self.request('app/register', method='POST', json=payload)
 
     def rollback(self, appname, revision=0):
         payload = {
+            'cluster': self.cluster,
             'revision': revision,
         }
-        return self.request('/app/%s/rollback' % appname, method='PUT', json=payload)
+        return self.request('app/%s/rollback' % appname, method='PUT', json=payload)
 
     def renew(self, appname):
         payload = {
+            'cluster': self.cluster,
         }
-        return self.request('/app/%s/renew' % appname, method='PUT', json=payload)
+        return self.request('app/%s/renew' % appname, method='PUT', json=payload)
 
-    def build(self, appname, tag):
+    def build_app(self, appname, tag):
         payload = {'tag': tag}
-        return self.request_stream('/app/%s/build' % appname, method='PUT', data=payload)
+        return self.request_stream('app/%s/build' % appname, method='PUT', data=payload)
 
     def deploy(self, appname, tag, cpus, memories, replicas, **kwargs):
         """deploy app.
@@ -163,6 +215,7 @@ class ConsoleAPI:
         replicas: app的副本数量
         """
         payload = {
+            'cluster': self.cluster,
             'tag': tag,
             'cpus': cpus,
             'memories': memories,
@@ -170,7 +223,7 @@ class ConsoleAPI:
         }
 
         payload.update(kwargs)
-        return self.request_stream('/app/%s/deploy' % appname, method='PUT', data=payload)
+        return self.request('app/%s/deploy' % appname, method='PUT', data=payload)
 
     def scale(self, appname, cpus, memories, replicas, **kwargs):
         """deploy app.
@@ -179,10 +232,31 @@ class ConsoleAPI:
         replicas: app的副本数量
         """
         payload = {
+            'cluster': self.cluster,
             'cpus': cpus,
             'memories': memories,
             'replicas': replicas,
         }
 
         payload.update(kwargs)
-        return self.request_stream('/app/%s/scale' % appname, method='PUT', data=payload)
+        return self.request('app/%s/scale' % appname, method='PUT', data=payload)
+
+    def create_job(self, specs_text=None, **kwargs):
+        payload = kwargs
+        if specs_text:
+            payload = {
+                'specs_text': specs_text,
+            }
+        return self.request('job', method='POST', json=payload)
+
+    def list_job(self):
+        return self.request('job', method='GET')
+
+    def delete_job(self, jobname):
+        return self.request('job/%s' % jobname, method='DELETE')
+
+    def get_job_log(self, jobname, follow=False):
+        if follow is False:
+            return self.request('job/%s/log' % jobname)
+        else:
+            return self.request_sse('job/%s/log/events' % jobname)

@@ -63,10 +63,13 @@ def get_app_releases(ctx, appname, raw):
 
 @click.argument('appname', required=False)
 @click.option('--raw', default=False, is_flag=True, help='print the raw json')
+@click.option('--cluster', default='default', help='cluster name')
 @click.pass_context
-def get_app_pods(ctx, appname, raw):
+def get_app_pods(ctx, appname, cluster, raw):
     kae = ctx.obj['kae_api']
     appname = get_appname(appname=appname)
+    kae.set_cluster(cluster)
+
     with handle_console_err():
         pods = kae.get_app_pods(appname)
 
@@ -116,10 +119,13 @@ def get_release_specs(ctx, appname, tag):
 
 
 @click.argument('appname', required=False)
+@click.option('--cluster', default='default', help='cluster name')
 @click.pass_context
-def get_secret(ctx, appname):
+def get_secret(ctx, appname, cluster):
     kae = ctx.obj['kae_api']
     appname = get_appname(appname=appname)
+    kae.set_cluster(cluster)
+
     with handle_console_err():
         d = kae.get_secret(appname)
 
@@ -128,10 +134,11 @@ def get_secret(ctx, appname):
 
 
 @click.argument('appname', required=False)
+@click.option('--cluster', default='default', help='cluster name')
 @click.option('-f', help='filename of secret')
 @click.option('--literal')
 @click.pass_context
-def set_secret(ctx, appname, f, literal):
+def set_secret(ctx, appname, cluster, f, literal):
     data = None
     if literal:
         try:
@@ -152,6 +159,8 @@ def set_secret(ctx, appname, f, literal):
         if not isinstance(k, str):
             fatal("key of secret must be string")
     kae = ctx.obj['kae_api']
+    kae.set_cluster(cluster)
+
     appname = get_appname(appname=appname)
     with handle_console_err():
         d = kae.set_secret(appname, data)
@@ -159,9 +168,12 @@ def set_secret(ctx, appname, f, literal):
 
 
 @click.argument('appname', required=False)
+@click.option('--cluster', default='default', help='cluster name')
 @click.pass_context
-def get_config(ctx, appname):
+def get_config(ctx, appname, cluster):
     kae = ctx.obj['kae_api']
+    kae.set_cluster(cluster)
+
     appname = get_appname(appname=appname)
     with handle_console_err():
         d = kae.get_config(appname)
@@ -176,12 +188,15 @@ def get_config(ctx, appname):
 
 
 @click.argument('appname', required=False)
+@click.option('--cluster', default='default', help='cluster name')
 @click.option('--name', default="config", help='key of the config')
 @click.option('-f', help='filename of secret')
 @click.option('--literal')
 @click.pass_context
-def set_config(ctx, appname, name, f, literal):
+def set_config(ctx, appname, cluster, name, f, literal):
     kae = ctx.obj['kae_api']
+    kae.set_cluster(cluster)
+
     appname = get_appname(appname=appname)
     if literal:
         data = literal
@@ -219,21 +234,25 @@ def register_release(ctx, appname, tag, git, f, literal):
 
 
 @click.argument('appname', required=False)
+@click.option('--cluster', default='default', help='cluster name')
 @click.argument('revision', default=0)
 @click.pass_context
-def rollback(ctx, appname, revision):
+def rollback(ctx, appname, cluster, revision):
     appname = get_appname(appname=appname)
     kae = ctx.obj['kae_api']
+    kae.set_cluster(cluster)
     with handle_console_err():
         kae.rollback(appname, revision)
     click.echo(info('Rollback %s(revision %s) done.' % (appname, revision)))
 
 
 @click.argument('appname', required=False)
+@click.option('--cluster', default='default', help='cluster name')
 @click.pass_context
-def renew(ctx, appname):
+def renew(ctx, appname, cluster):
     appname = get_appname(appname=appname)
     kae = ctx.obj['kae_api']
+    kae.set_cluster(cluster)
     with handle_console_err():
         kae.renew(appname)
     click.echo(info('Renew %s done.' % (appname, )))

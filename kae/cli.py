@@ -18,7 +18,7 @@ from kae.utils import read_yaml_file
 
 @click.group()
 @click.option('--config-path', default=expanduser('~/.kae/config.yaml'),
-              help='config file, json', envvar='KAE_CONFIG_PATH')
+              help='config file, yaml', envvar='KAE_CONFIG_PATH')
 @click.option('--remotename', default='origin', help='git remote name, default to origin', envvar='KAE_REPO_NAME')
 @click.option('--debug', default=False, help='enable debug output', is_flag=True)
 @click.pass_context

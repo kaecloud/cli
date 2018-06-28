@@ -7,9 +7,9 @@
 from __future__ import print_function, division, absolute_import
 
 from .action import (
-    deploy,
-    build,
-    scale,
+    deploy_app,
+    build_app,
+    scale_app,
 )
 
 
@@ -31,6 +31,13 @@ from .app import (
     renew,
 )
 
+from .job import (
+    create_job,
+    list_job,
+    delete_job,
+    get_job_log,
+)
+
 commands = {
     'app:get': get_app,
     'app:release': get_app_releases,
@@ -46,11 +53,16 @@ commands = {
     'config:get': get_config,
     'config:set': set_config,
 
-    'rollback': rollback,
-    'register': register_release,
-    'renew': renew,
+    'app:register': register_release,
+    'app:rollback': rollback,
+    'app:renew': renew,
 
-    'deploy': deploy,
-    'build': build,
-    'scale': scale,
+    'app:deploy': deploy_app,
+    'app:build': build_app,
+    'app:scale': scale_app,
+
+    'job:create': create_job,
+    'job:list': list_job,
+    'job:delete': delete_job,
+    'job:log': get_job_log,
 }
