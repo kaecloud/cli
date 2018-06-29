@@ -122,6 +122,8 @@ class ConsoleAPI:
         client = sseclient.SSEClient(resp)
         for event in client.events():
             try:
+                if event.event == 'close':
+                    return
                 yield jsonlib.loads(event.data)
             except (ValueError, TypeError):
                 raise ConsoleAPIError(500, str(event))
@@ -205,7 +207,7 @@ class ConsoleAPI:
 
     def build_app(self, appname, tag):
         payload = {'tag': tag}
-        return self.request_stream('app/%s/build' % appname, method='PUT', data=payload)
+        return self.request_sse('app/%s/build' % appname, params=payload)
 
     def deploy(self, appname, tag, cpus, memories, replicas, **kwargs):
         """deploy app.
