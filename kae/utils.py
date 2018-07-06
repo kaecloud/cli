@@ -180,7 +180,7 @@ def get_specs_text_from_repo(cwd=None):
         with open(os.path.join(cwd or os.getcwd(), 'app.yaml'), 'r') as f:
             return f.read()
     except IOError:
-        return ''
+        return None
 
 
 def get_specs_text(fname, literal):

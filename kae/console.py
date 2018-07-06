@@ -102,7 +102,8 @@ class ConsoleAPI:
             except (ValueError, TypeError):
                 raise ConsoleAPIError(500, line)
 
-    def request_sse(self, path, method='GET', params=None, data=None, json=None, **kwargs):
+    def request_sse(self, path, params=None, data=None, json=None, **kwargs):
+        method = 'GET'
         url = urljoin(self.base, path)
         params = params or {}
         cookies = self._load_cookie() or {}
@@ -182,13 +183,14 @@ class ConsoleAPI:
         }
         return self.request('app/%s/configmap' % appname, method="POST", json=payload)
 
-    def register_release(self, appname, tag, git, specs_text, branch=None):
+    def register_release(self, appname, tag, git, specs_text, branch=None, force=False):
         payload = {
             'appname': appname,
             'tag': tag,
             'git': git,
             'specs_text': specs_text,
             'branch': branch,
+            'force': force,
         }
         return self.request('app/register', method='POST', json=payload)
 

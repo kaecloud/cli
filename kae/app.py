@@ -217,19 +217,27 @@ def set_config(ctx, appname, cluster, name, f, literal):
 @click.argument('git', required=False)
 @click.option('-f', help='filename of specs')
 @click.option('--literal')
+@click.option('--force', default=False, is_flag=True, help='force KAE to replace the exist release')
 @click.pass_context
-def register_release(ctx, appname, tag, git, f, literal):
+def register_release(ctx, appname, tag, git, f, literal, force):
     appname = get_appname(appname=appname)
     tag = get_git_tag(git_tag=tag)
 
     specs_text = get_specs_text(f, literal)
+    if specs_text is None:
+        errmsg = [
+            "specs_text is required, please use one of the instructions to specify it.",
+            "1. specify --literal or -f in coomand line",
+            "2. make the current workdir in the source code dir which contains app.yaml"
+        ]
+        fatal('\n'.join(errmsg))
     kae = ctx.obj['kae_api']
     git = git or get_remote_url(remote=ctx.obj['remotename'])
     if not git:
         fatal("git url not found, please check repository or pass argument")
     branch = get_current_branch()
     with handle_console_err():
-        kae.register_release(appname, tag, git, specs_text, branch=branch)
+        kae.register_release(appname, tag, git, specs_text, branch=branch, force=force)
     click.echo(info('Register %s %s %s done.' % (appname, tag, git)))
 
 
