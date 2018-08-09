@@ -144,7 +144,7 @@ class ConsoleAPI:
 
     def request_ws(self, path, params=None, data=None, json=None):
         url = urljoin(self.base, path)
-        url = re.sub(r'^https?', 'ws', url)
+        url = re.sub(r'^http', 'ws', url)
         options = {
             'header': [
                 "X-Access-Token: {}".format(self.auth_token),
