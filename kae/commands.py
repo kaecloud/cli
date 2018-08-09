@@ -8,6 +8,7 @@ from __future__ import print_function, division, absolute_import
 
 from .action import (
     deploy_app,
+    deploy_app_canary,
     build_app,
     scale_app,
 )
@@ -16,10 +17,12 @@ from .action import (
 from .app import (
     get_app,
     delete_app,
+    delete_app_canary,
     get_app_releases,
     get_app_pods,
     get_release,
     get_release_specs,
+    watch_app_pods,
 
     get_secret,
     set_secret,
@@ -29,6 +32,8 @@ from .app import (
     register_release,
     rollback,
     renew,
+
+    set_app_abtesting_rules,
 )
 
 from .job import (
@@ -42,7 +47,11 @@ commands = {
     'app:get': get_app,
     'app:release': get_app_releases,
     'app:delete': delete_app,
+    'app:delete_canary': delete_app_canary,
     'app:pods': get_app_pods,
+    'app:watch_pods': watch_app_pods,
+
+    'app:set_abtesting': set_app_abtesting_rules,
 
     'release:get': get_release,
     'release:specs': get_release_specs,
@@ -58,6 +67,7 @@ commands = {
     'app:renew': renew,
 
     'app:deploy': deploy_app,
+    'app:deploy_canary': deploy_app_canary,
     'app:build': build_app,
     'app:scale': scale_app,
 

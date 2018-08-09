@@ -13,7 +13,7 @@ prettytable = "*"
 requests = "*"
 tqdm = "*"
 reprint = "*"
-sseclient-py = "*"
+websocket-client = "*"
 
 [requires]
 python_version = "3.5"

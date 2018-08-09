@@ -41,7 +41,7 @@ requires = [
     'reprint==0.5.1',
     'requests==2.18.4',
     'tqdm==4.23.4',
-    'sseclient-py==1.7',
+    'websocket-client==0.48.0',
 ]
 root_dir = dirname(abspath(__file__))
 

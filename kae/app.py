@@ -11,7 +11,8 @@ import click
 from prettytable import PrettyTable
 from kae.utils import (
     get_appname, get_current_branch, get_remote_url, get_git_tag,
-    get_specs_text, error, info, fatal, handle_console_err
+    get_specs_text, error, info, fatal, handle_console_err,
+    display_pods,
 )
 
 
@@ -39,6 +40,34 @@ def delete_app(ctx, appname):
     appname = get_appname(appname=appname)
     with handle_console_err():
         ret = kae.delete_app(appname)
+
+    click.echo(info(json.dumps(ret)))
+
+
+@click.argument('appname', required=False)
+@click.option('--cluster', default='default', help='cluster name')
+@click.pass_context
+def delete_app_canary(ctx, appname, cluster):
+    kae = ctx.obj['kae_api']
+    appname = get_appname(appname=appname)
+    kae.set_cluster(cluster)
+    with handle_console_err():
+        ret = kae.delete_app_canary(appname)
+
+    click.echo(info(json.dumps(ret)))
+
+
+@click.argument('appname', required=False)
+@click.argument('rules', required=False)
+@click.option('--cluster', default='default', help='cluster name')
+@click.pass_context
+def set_app_abtesting_rules(ctx, appname, rules, cluster):
+    kae = ctx.obj['kae_api']
+    appname = get_appname(appname=appname)
+    rules = json.loads(rules)
+    kae.set_cluster(cluster)
+    with handle_console_err():
+        ret = kae.set_app_abtesting_rules(appname, rules)
 
     click.echo(info(json.dumps(ret)))
 
@@ -84,6 +113,30 @@ def get_app_pods(ctx, appname, cluster, raw):
             table.add_row([name, status, ready])
         click.echo(table)
 
+
+@click.argument('appname', required=False)
+@click.option('--raw', default=False, is_flag=True, help='print the raw json')
+@click.option('--cluster', default='default', help='cluster name')
+@click.pass_context
+def watch_app_pods(ctx, appname, cluster, raw):
+    kae = ctx.obj['kae_api']
+    appname = get_appname(appname=appname)
+    kae.set_cluster(cluster)
+
+    # with handle_console_err():
+    watcher = kae.watch_app_pods(appname)
+    display_pods(kae, watcher, appname, forever=True)
+
+    # if raw:
+    #     click.echo(str(pods))
+    # else:
+    #     table = PrettyTable(['name', 'status', 'ready'])
+    #     for item in pods['items']:
+    #         name = item['metadata']['name']
+    #         status = item['status']['phase']
+    #         ready = sum([1 if c_status['ready'] else 0 for c_status in item['status']['container_statuses']])
+    #         table.add_row([name, status, ready])
+    #     click.echo(table)
 
 @click.argument('appname', required=False)
 @click.argument('tag', required=False)

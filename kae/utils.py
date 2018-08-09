@@ -16,6 +16,8 @@ import delegator
 import json
 import yaml
 from click import ClickException
+from reprint import output
+from prettytable import PrettyTable
 from .errors import ConsoleAPIError
 
 _GITLAB_CI_REMOTE_URL_PATTERN = re.compile(r'http://gitlab-ci-token:(.+)@([\.\w]+)/([-\w]+)/([-\w]+).git')
@@ -207,3 +209,70 @@ def merge_list(l1, l2):
         l1.extend(l2[len1:])
     else:
         l1[len2:] = ["" for i in range(len1 - len2)]
+
+
+def display_pods(kae, watcher, appname, canary=False, forever=False):
+    def get_replicas(appname):
+        with handle_console_err():
+            dp = kae.get_app_deployment(appname, canary)
+            return dp['spec']['replicas']
+
+    def extract_data_from_pod(pod):
+        status = pod['status']['phase']
+        restart_count = 0
+        ready_count = 0
+        ready_total = len(pod['spec']['containers'])
+        c_status_list = pod['status'].get('container_statuses', None)
+        if c_status_list:
+            for cont_status in c_status_list:
+                if cont_status['ready']:
+                    ready_count += 1
+                else:
+                    if cont_status['state'].get('terminated', None):
+                        status = cont_status['state']['terminated']['reason']
+                    elif cont_status['state'].get('waiting', None):
+                        status = cont_status['state']['waiting']['reason']
+            if cont_status['restart_count'] > restart_count:
+                restart_count = cont_status['restart_count']
+        return {
+            'ready_count': ready_count,
+            'ready_total': ready_total,
+            "ready": "{}/{}".format(ready_count, ready_total),
+            "name": pod['metadata']['name'],
+            'status': status,
+            'restarts': restart_count,
+            'ip': pod['status'].get('pod_ip', None),
+            'node': pod['status'].get('host_ip', None),
+        }
+
+    def print_table(pod_map, output_list):
+        ready_pods = 0
+        table = PrettyTable(['name', 'status', 'ready', 'restarts', 'ip', 'node'])
+        for name, pod in pod_map.items():
+            data = extract_data_from_pod(pod)
+            table.add_row([name, data['status'], data['ready'], data['restarts'], data['ip'], data['node']])
+            if data['ready_count'] == data['ready_total']:
+                ready_pods += 1
+        merge_list(output_list, str(table).split('\n'))
+        return ready_pods
+
+    pod_map = {}
+    replicas = get_replicas(appname)
+
+    with output(output_type="list", initial_len=10, interval=0) as output_list:
+        ready_pods = print_table(pod_map, output_list)
+        if ready_pods == replicas and ready_pods == len(pod_map):
+            return
+
+        for m in watcher:
+            action = m['action']
+            pod = m["object"]
+            name = pod['metadata']['name']
+            if action == 'DELETED':
+                pod_map.pop(name, None)
+            else:
+                pod_map[name] = pod
+            # display table
+            ready_pods = print_table(pod_map, output_list)
+            if forever is False and ready_pods == replicas and ready_pods == len(pod_map):
+                return
