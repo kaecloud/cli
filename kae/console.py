@@ -72,7 +72,7 @@ class ConsoleAPI:
         self.host = host
         self.base = '%s/api/%s/' % (self.host, version)
         self.session = Session()
-        self.session.headers.update({'X-Access-Token': auth_token})
+        self.session.headers.update({'X-Private-Token': auth_token})
 
     def _save_cookie(self, cookies):
         fname = os.path.join(self.cookie_dir, "cookie")
@@ -147,7 +147,7 @@ class ConsoleAPI:
         url = re.sub(r'^http', 'ws', url)
         options = {
             'header': [
-                "X-Access-Token: {}".format(self.auth_token),
+                "X-Private-Token: {}".format(self.auth_token),
             ],
         }
         ws = websocket.create_connection(url, **options)
