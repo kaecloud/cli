@@ -92,7 +92,7 @@ def build_app(ctx, appname, tag):
 @click.argument('tag', required=False)
 @click.option('--cpus', multiple=True, help='how many CPUs to set, format `idx,req,limit` or `req,limit`, e.g. --cpu 0,1.5,2')
 @click.option('--memories', multiple=True, help='how much memory to set, format `idx,req,limit` or `req,limit` e.g. --memory 0,64M,256M')
-@click.option('--replicas', default=1, type=int, help='repliocas of app, e.g. --replicas 2')
+@click.option('--replicas', type=int, help='repliocas of app, e.g. --replicas 2')
 @click.option('--yaml-name', default='default', help="app yaml name")
 @click.option('--cluster', default='default', help='cluster name')
 @click.pass_context
@@ -118,7 +118,7 @@ def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name):
 @click.argument('tag', required=False)
 @click.option('--cpus', multiple=True, help='how many CPUs to set, format `idx,req,limit` or `req,limit`, e.g. --cpu 0,1.5,2')
 @click.option('--memories', multiple=True, help='how much memory to set, format `idx,req,limit` or `req,limit` e.g. --memory 0,64M,256M')
-@click.option('--replicas', default=1, type=int, help='repliocas of app, e.g. --replicas 2')
+@click.option('--replicas', type=int, help='repliocas of app, e.g. --replicas 2')
 @click.option('--yaml-name', default='default', help="app yaml name")
 @click.option('--cluster', default='default', help='cluster name')
 @click.pass_context

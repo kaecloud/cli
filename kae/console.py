@@ -252,12 +252,14 @@ class ConsoleAPI:
         payload = {'tag': tag}
         return self.request_ws('ws/app/%s/build' % appname, json=payload)
 
-    def deploy_app(self, appname, tag, cpus, memories, replicas, app_yaml_name):
+    def deploy_app(self, appname, tag, cpus=None, memories=None, replicas=None, app_yaml_name=None):
         """deploy app.
+        appname:
         tag: 要部署的版本号, git tag的值.
-        cpu_quota: 需要的cpu个数, 例如1, 或者1.5, 如果是public的部署, 传0.
-        memory: 最小4MB.
+        cpus: 需要的cpu个数, 例如1, 或者1.5, 如果是public的部署, 传0.
+        memories: 最小4MB.
         replicas: app的副本数量
+        app_yaml_name: AppYaml template name
         """
         payload = {
             'cluster': self.cluster,
@@ -267,15 +269,17 @@ class ConsoleAPI:
             'replicas': replicas,
             'app_yaml_name': app_yaml_name,
         }
-
+        payload = {k: v for k, v in payload.items() if v is not None}
         return self.request('app/%s/deploy' % appname, method='PUT', data=payload)
 
-    def deploy_app_canary(self, appname, tag, cpus, memories, replicas, app_yaml_name):
-        """deploy app.
+    def deploy_app_canary(self, appname, tag, cpus=None, memories=None, replicas=None, app_yaml_name=None):
+        """deploy canary version of specified app
+        appname:
         tag: 要部署的版本号, git tag的值.
-        cpu_quota: 需要的cpu个数, 例如1, 或者1.5, 如果是public的部署, 传0.
-        memory: 最小4MB.
+        cpus: 需要的cpu个数, 例如1, 或者1.5, 如果是public的部署, 传0.
+        memories: 最小4MB.
         replicas: app的副本数量
+        app_yaml_name: AppYaml template name
         """
         payload = {
             'cluster': self.cluster,
@@ -286,6 +290,7 @@ class ConsoleAPI:
             'app_yaml_name': app_yaml_name,
         }
 
+        payload = {k: v for k, v in payload.items() if v is not None}
         return self.request('app/%s/canary/deploy' % appname, method='PUT', data=payload)
 
     def delete_app_canary(self, appname):
