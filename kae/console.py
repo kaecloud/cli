@@ -252,7 +252,7 @@ class ConsoleAPI:
         payload = {'tag': tag}
         return self.request_ws('ws/app/%s/build' % appname, json=payload)
 
-    def deploy_app(self, appname, tag, cpus, memories, replicas, **kwargs):
+    def deploy_app(self, appname, tag, cpus, memories, replicas, app_yaml_name):
         """deploy app.
         tag: 要部署的版本号, git tag的值.
         cpu_quota: 需要的cpu个数, 例如1, 或者1.5, 如果是public的部署, 传0.
@@ -265,12 +265,12 @@ class ConsoleAPI:
             'cpus': cpus,
             'memories': memories,
             'replicas': replicas,
+            'app_yaml_name': app_yaml_name,
         }
 
-        payload.update(kwargs)
         return self.request('app/%s/deploy' % appname, method='PUT', data=payload)
 
-    def deploy_app_canary(self, appname, tag, cpus, memories, replicas, **kwargs):
+    def deploy_app_canary(self, appname, tag, cpus, memories, replicas, app_yaml_name):
         """deploy app.
         tag: 要部署的版本号, git tag的值.
         cpu_quota: 需要的cpu个数, 例如1, 或者1.5, 如果是public的部署, 传0.
@@ -283,9 +283,9 @@ class ConsoleAPI:
             'cpus': cpus,
             'memories': memories,
             'replicas': replicas,
+            'app_yaml_name': app_yaml_name,
         }
 
-        payload.update(kwargs)
         return self.request('app/%s/canary/deploy' % appname, method='PUT', data=payload)
 
     def delete_app_canary(self, appname):

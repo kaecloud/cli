@@ -93,12 +93,10 @@ def build_app(ctx, appname, tag):
 @click.option('--cpus', multiple=True, help='how many CPUs to set, format `idx,req,limit` or `req,limit`, e.g. --cpu 0,1.5,2')
 @click.option('--memories', multiple=True, help='how much memory to set, format `idx,req,limit` or `req,limit` e.g. --memory 0,64M,256M')
 @click.option('--replicas', default=1, type=int, help='repliocas of app, e.g. --replicas 2')
-@click.option('-f', help='filename of specs')
-@click.option('--literal')
+@click.option('--yaml-name', default='default', help="app yaml name")
 @click.option('--cluster', default='default', help='cluster name')
 @click.pass_context
-def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, f, literal):
-    specs_text = get_specs_text(f, literal)
+def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name):
     tag = get_git_tag(git_tag=tag)
     appname = get_appname(appname=appname)
 
@@ -110,7 +108,8 @@ def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, f, literal)
 
     watcher = kae.get_app_pods(appname, watch=True)
     with handle_console_err():
-        kae.deploy_app(appname, tag, cpus_dict, memories_dict, replicas, specs_text=specs_text)
+        kae.deploy_app(appname, tag, cpus_dict, memories_dict,
+                       replicas, app_yaml_name=yaml_name)
     display_pods(kae, watcher, appname)
     click.echo(info("deploy done.."))
 
@@ -120,12 +119,10 @@ def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, f, literal)
 @click.option('--cpus', multiple=True, help='how many CPUs to set, format `idx,req,limit` or `req,limit`, e.g. --cpu 0,1.5,2')
 @click.option('--memories', multiple=True, help='how much memory to set, format `idx,req,limit` or `req,limit` e.g. --memory 0,64M,256M')
 @click.option('--replicas', default=1, type=int, help='repliocas of app, e.g. --replicas 2')
-@click.option('-f', help='filename of specs')
-@click.option('--literal')
+@click.option('--yaml-name', default='default', help="app yaml name")
 @click.option('--cluster', default='default', help='cluster name')
 @click.pass_context
-def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, f, literal):
-    specs_text = get_specs_text(f, literal)
+def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name):
     tag = get_git_tag(git_tag=tag)
     appname = get_appname(appname=appname)
 
@@ -136,7 +133,8 @@ def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, f, l
     kae.set_cluster(cluster)
 
     with handle_console_err():
-        kae.deploy_app_canary(appname, tag, cpus_dict, memories_dict, replicas, specs_text=specs_text)
+        kae.deploy_app_canary(appname, tag, cpus_dict, memories_dict,
+                              replicas, app_yaml_name=yaml_name)
     watcher = kae.get_app_pods(appname, canary=True, watch=True)
     display_pods(kae, watcher, appname, canary=True)
     click.echo(info("deploy done.."))
