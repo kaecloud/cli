@@ -203,10 +203,11 @@ class ConsoleAPI:
         }
         return self.request('app/%s/secret' % appname, params=params)
 
-    def set_secret(self, appname, data):
+    def set_secret(self, appname, data, replace=False):
         payload = {
             'cluster': self.cluster,
             'data': data,
+            'replace': replace,
         }
         return self.request('app/%s/secret' % appname, method="POST", json=payload)
 
@@ -216,11 +217,11 @@ class ConsoleAPI:
         }
         return self.request('app/%s/configmap' % appname, params=params)
 
-    def set_config(self, appname, config_name, data):
+    def set_config(self, appname, data, replace=False):
         payload = {
             'cluster': self.cluster,
-            'config_name': config_name,
             'data': data,
+            'replace': replace,
         }
         return self.request('app/%s/configmap' % appname, method="POST", json=payload)
 

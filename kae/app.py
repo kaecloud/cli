@@ -190,8 +190,9 @@ def get_secret(ctx, appname, cluster):
 @click.option('--cluster', default='default', help='cluster name')
 @click.option('-f', help='filename of secret')
 @click.option('--literal')
+@click.option('--replace', default=False, is_flag=True, help='replae the secret data')
 @click.pass_context
-def set_secret(ctx, appname, cluster, f, literal):
+def set_secret(ctx, appname, cluster, f, literal, replace):
     data = None
     if literal:
         try:
@@ -216,7 +217,7 @@ def set_secret(ctx, appname, cluster, f, literal):
 
     appname = get_appname(appname=appname)
     with handle_console_err():
-        d = kae.set_secret(appname, data)
+        d = kae.set_secret(appname, data, replace)
     click.echo(info(str(d)))
 
 
@@ -245,8 +246,9 @@ def get_config(ctx, appname, cluster):
 @click.option('--name', default="config", help='key of the config')
 @click.option('-f', help='filename of secret')
 @click.option('--literal')
+@click.option('--replace', default=False, is_flag=True, help='replae the configmap data')
 @click.pass_context
-def set_config(ctx, appname, cluster, name, f, literal):
+def set_config(ctx, appname, cluster, name, f, literal, replace):
     kae = ctx.obj['kae_api']
     kae.set_cluster(cluster)
 
@@ -259,8 +261,11 @@ def set_config(ctx, appname, cluster, name, f, literal):
                 data = fp.read()
         except Exception:
             fatal("can't read config data from {}".format(f))
+    cm_data = {
+        name: data
+    }
     with handle_console_err():
-        d = kae.set_config(appname, name, data)
+        d = kae.set_config(appname, cm_data, replace)
     ss = pprint.pformat(d)
     click.echo(info(ss))
 
