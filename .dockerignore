@@ -1,0 +1,15 @@
+.dockerignore
+Dockerfile
+.gitignore
+.envrc
+.idea
+.git
+.vscode
+.pytest_cache
+**/local_config.*
+**/__pycache__/
+**/*.py[cod]
+.ropeproject
+.cache
+doc
+kae.egg-info

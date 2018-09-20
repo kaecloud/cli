@@ -68,8 +68,12 @@ def build_app(ctx, appname, tag):
             #                 break
             #             pbar.update(m['progress']['cur_count'])
             #     continue
+            raw_data = m.get('raw_data', {})
+            if raw_data.get('error', None):
+                click.echo(error(str(raw_data)))
+                ctx.exit(-1)
+
             if phase.lower() == "pushing":
-                raw_data = m['raw_data']
                 if len(raw_data) == 1 and 'status' in raw_data:
                     click.echo(raw_data['status'])
                 elif 'id' in raw_data and 'status' in raw_data:
