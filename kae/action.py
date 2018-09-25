@@ -68,7 +68,9 @@ def build_app(ctx, appname, tag):
             #                 break
             #             pbar.update(m['progress']['cur_count'])
             #     continue
-            raw_data = m.get('raw_data', {})
+            raw_data = m.get('raw_data', None)
+            if raw_data is None:
+                raw_data = {}
             if raw_data.get('error', None):
                 click.echo(error(str(raw_data)))
                 ctx.exit(-1)
