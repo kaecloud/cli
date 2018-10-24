@@ -47,9 +47,9 @@ def build_app(ctx, appname, tag):
 
     kae = ctx.obj['kae_api']
     gen = kae.build_app(appname, tag)
+    phase = None
     try:
         m = next(gen)
-        phase = None
         while True:
             if m['success'] is False:
                 click.echo(error(m['error']))
@@ -91,6 +91,9 @@ def build_app(ctx, appname, tag):
     except StopIteration:
         pass
 
+    if phase.lower() != "finished":
+        click.echo(error("build terminates prematurely."))
+        click.exit(-1)
     click.echo(info('\nBuild %s %s done.' % (appname, tag)))
 
 
