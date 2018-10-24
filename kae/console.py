@@ -60,37 +60,17 @@ def recv_ws(ws):
 
 class ConsoleAPI:
     def __init__(self, host, version='v1', timeout=None,
-                 password='', auth_token='', cookie_dir='~/.kae',
-                 cluster='default'):
+                 password='', auth_token='', cluster='default'):
         self.host = host
         self.version = version
         self.timeout = timeout
         self.auth_token = auth_token
-        self.cookie_dir = os.path.expanduser(cookie_dir)
         self.cluster = cluster
 
         self.host = host
         self.base = '%s/api/%s/' % (self.host, version)
         self.session = Session()
         self.session.headers.update({'X-Private-Token': auth_token})
-
-    def _save_cookie(self, cookies):
-        fname = os.path.join(self.cookie_dir, "cookie")
-        try:
-            with open(fname, "wb") as fp:
-                pickle.dump(cookies, fp)
-        except:
-            pass
-
-    def _load_cookie(self):
-        fname = os.path.join(self.cookie_dir, "cookie")
-        if not os.path.isfile(fname):
-            return None
-        try:
-            with open(fname, "rb") as fp:
-                return pickle.load(fp)
-        except:
-            return None
 
     def set_cluster(self, cluster):
         self.cluster = cluster
@@ -99,16 +79,13 @@ class ConsoleAPI:
         """Wrap around requests.request method"""
         url = urljoin(self.base, path)
         params = params or {}
-        cookies = self._load_cookie() or {}
         resp = self.session.request(url=url,
                                     method=method,
                                     params=params,
-                                    cookies=cookies,
                                     data=data,
                                     json=json,
                                     timeout=self.timeout,
                                     **kwargs)
-        self._save_cookie(self.session.cookies.get_dict())
         code = resp.status_code
         if code != 200:
             raise ConsoleAPIError(code, resp.text)
