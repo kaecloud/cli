@@ -27,7 +27,7 @@ def kae_commands(ctx, config_path, remotename, debug):
     if not config:
         config = {}
         config['auth_token'] = getenv('KAE_AUTH_TOKEN')
-        config['kae_url'] = getenv('KAE_URL', 'http://console.gtapp.xyz')
+        config['kae_url'] = getenv('KAE_URL', 'https://console.gtapp.xyz')
         click.echo('config saved to {}'.format(config_path))
 
     if debug:
