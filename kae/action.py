@@ -101,8 +101,9 @@ def build_app(ctx, appname, tag):
 @click.option('--replicas', type=int, help='repliocas of app, e.g. --replicas 2')
 @click.option('--yaml-name', default='default', help="app yaml name")
 @click.option('--cluster', default='default', help='cluster name')
+@click.option('--watch', default=False, is_flag=True, help='watch pods')
 @click.pass_context
-def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name):
+def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name, watch):
     tag = get_git_tag(git_tag=tag)
     appname = get_appname(appname=appname)
 
@@ -112,11 +113,12 @@ def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name):
     kae = ctx.obj['kae_api']
     kae.set_cluster(cluster)
 
-    watcher = kae.get_app_pods(appname, watch=True)
     with handle_console_err():
         kae.deploy_app(appname, tag, cpus_dict, memories_dict,
                        replicas, app_yaml_name=yaml_name)
-    display_pods(kae, watcher, appname)
+    if watch:
+        watcher = kae.get_app_pods(appname, watch=True)
+        display_pods(kae, watcher, appname)
     click.echo(info("deploy done.."))
 
 
@@ -127,8 +129,9 @@ def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name):
 @click.option('--replicas', type=int, help='repliocas of app, e.g. --replicas 2')
 @click.option('--yaml-name', default='default', help="app yaml name")
 @click.option('--cluster', default='default', help='cluster name')
+@click.option('--watch', default=False, is_flag=True, help='watch pods')
 @click.pass_context
-def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name):
+def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name, watch):
     tag = get_git_tag(git_tag=tag)
     appname = get_appname(appname=appname)
 
@@ -141,8 +144,9 @@ def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, yaml
     with handle_console_err():
         kae.deploy_app_canary(appname, tag, cpus_dict, memories_dict,
                               replicas, app_yaml_name=yaml_name)
-    watcher = kae.get_app_pods(appname, canary=True, watch=True)
-    display_pods(kae, watcher, appname, canary=True)
+    if watch:
+        watcher = kae.get_app_pods(appname, canary=True, watch=True)
+        display_pods(kae, watcher, appname, canary=True)
     click.echo(info("deploy done.."))
 
 
@@ -151,8 +155,9 @@ def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, yaml
 @click.option('--memories', multiple=True, help='how much memory to set, format `idx,req,limit` or `req,limit` e.g. --memory 0,64M,256M')
 @click.option('--replicas', default=0, type=int, help='repliocas of app, e.g. --replicas 2')
 @click.option('--cluster', default='default', help='cluster name')
+@click.option('--watch', default=False, is_flag=True, help='watch pods')
 @click.pass_context
-def scale_app(ctx, appname, cpus, memories, replicas, cluster):
+def scale_app(ctx, appname, cpus, memories, replicas, cluster, watch):
     appname = get_appname(appname=appname)
 
     if not (cpus or memories or replicas):
@@ -161,10 +166,12 @@ def scale_app(ctx, appname, cpus, memories, replicas, cluster):
     memories_dict = cfg_list_to_dict(memories)
 
     kae = ctx.obj['kae_api']
-    watcher = kae.get_app_pods(appname, watch=True)
 
     kae.set_cluster(cluster)
     with handle_console_err():
         kae.scale_app(appname, cpus_dict, memories_dict, replicas)
-    display_pods(kae, watcher, appname)
+
+    if watch:
+        watcher = kae.get_app_pods(appname, watch=True)
+        display_pods(kae, watcher, appname)
     click.echo(info("scale done.."))
