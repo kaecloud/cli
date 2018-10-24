@@ -119,29 +119,6 @@ class ConsoleAPI:
             raise ConsoleAPIError(500, 'BUG: Console did not return json, body {}'.format(resp.text))
         return response
 
-    def request_stream(self, path, method='GET', params=None, data=None, json=None, **kwargs):
-        url = urljoin(self.base, path)
-        params = params or {}
-        cookies = self._load_cookie() or {}
-        resp = self.session.request(url=url,
-                                    method=method,
-                                    params=params,
-                                    cookies=cookies,
-                                    data=data,
-                                    json=json,
-                                    timeout=self.timeout,
-                                    stream=True)
-
-        code = resp.status_code
-        if code != 200:
-            raise ConsoleAPIError(code, resp.text)
-        for line in resp.iter_lines():
-            line = line.decode('utf8')
-            try:
-                yield jsonlib.loads(line)
-            except (ValueError, TypeError):
-                raise ConsoleAPIError(500, line)
-
     def request_ws(self, path, params=None, data=None, json=None):
         url = urljoin(self.base, path)
         url = re.sub(r'^http', 'ws', url)
