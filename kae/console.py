@@ -203,8 +203,11 @@ class ConsoleAPI:
         }
         return self.request('app/%s/renew' % appname, method='PUT', json=payload)
 
-    def build_app(self, appname, tag):
-        payload = {'tag': tag}
+    def build_app(self, appname, tag, block=False):
+        payload = {
+            'tag': tag,
+            'block': block,
+        }
         return self.request_ws('ws/app/%s/build' % appname, json=payload)
 
     def deploy_app(self, appname, tag, cpus=None, memories=None, replicas=None, app_yaml_name=None):

@@ -40,13 +40,14 @@ def cfg_list_to_dict(lst):
 
 @click.argument('appname', required=False)
 @click.argument('tag', required=False)
+@click.option('--block', default=False, is_flag=True, help='block when exist other build task for this app')
 @click.pass_context
-def build_app(ctx, appname, tag):
+def build_app(ctx, appname, tag, block):
     tag = get_git_tag(git_tag=tag)
     appname = get_appname(appname=appname)
 
     kae = ctx.obj['kae_api']
-    gen = kae.build_app(appname, tag)
+    gen = kae.build_app(appname, tag, block)
     phase = None
     try:
         m = next(gen)
