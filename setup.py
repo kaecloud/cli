@@ -39,7 +39,7 @@ requires = [
     'prettytable==0.7.2',
     'pyyaml==3.12',
     'reprint==0.5.1',
-    'requests==2.18.4',
+    'requests>=2.20.0',
     'tqdm==4.23.4',
     'websocket-client==0.48.0',
 ]
