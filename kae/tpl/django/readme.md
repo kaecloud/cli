@@ -1,0 +1,1 @@
+基本和flask一样，调整下Dockerfile的gunicorn的app就好了

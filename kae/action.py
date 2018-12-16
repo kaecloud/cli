@@ -94,7 +94,7 @@ def build_app(ctx, appname, tag, block):
 
     if phase.lower() != "finished":
         click.echo(error("build terminates prematurely."))
-        click.exit(-1)
+        raise click.Abort()
     click.echo(info('\nBuild %s %s done.' % (appname, tag)))
 
 

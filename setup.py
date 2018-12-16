@@ -42,6 +42,7 @@ requires = [
     'requests==2.18.4',
     'tqdm==4.23.4',
     'websocket-client==0.48.0',
+    'jinja2==2.10',
 ]
 root_dir = dirname(abspath(__file__))
 
@@ -53,6 +54,7 @@ setup(
     author='Yu Yang',
     author_email='yangyu@geetest.com',
     url='',
+    include_package_data=True,
     packages=find_packages(root_dir),
     install_requires=requires,
     entry_points={
