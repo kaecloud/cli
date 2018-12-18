@@ -14,6 +14,7 @@ import click
 from kae.commands import commands
 from kae.console import ConsoleAPI
 from kae.utils import read_yaml_file, write_yaml_file
+from kae.create_app import create_web_app
 
 
 @click.group()
@@ -46,5 +47,16 @@ for command, function in commands.items():
     kae_commands.command(command)(function)
 
 
+@click.group()
+def no_api_commands():
+    pass
+
+
+no_api_commands.command('create-web-app')(create_web_app)
+
+
+cli = click.CommandCollection(sources=[kae_commands, no_api_commands])
+
+
 def main():
-    kae_commands(obj={})
+    cli(obj={})
