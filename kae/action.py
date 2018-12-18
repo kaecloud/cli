@@ -54,7 +54,7 @@ def build_app(ctx, appname, tag, block):
         while True:
             if m['success'] is False:
                 click.echo(error(m['error']))
-                ctx.exit(-1)
+                raise click.Abort()
             if phase != m['phase']:
                 phase = m['phase']
                 click.echo(info("***** PHASE {}".format(m['phase'])))
@@ -74,7 +74,7 @@ def build_app(ctx, appname, tag, block):
                 raw_data = {}
             if raw_data.get('error', None):
                 click.echo(error(str(raw_data)))
-                ctx.exit(-1)
+                raise click.Abort()
 
             if phase.lower() == "pushing":
                 if len(raw_data) == 1 and 'status' in raw_data:
