@@ -1,0 +1,38 @@
+appname: {{appname}}
+type: web
+
+builds:
+- name: {{appname}}
+
+service:
+  user: root
+  replicas: {{replicas}}
+
+  # 域名，部署到科技园的应用会自带一个kjy.gtapp.xyz的子域名，所以这块可以不指定，部署到百度的需要指定
+  mountpoints:
+    - host: hello.geetest.com
+      path: /
+  ports:
+  - port: 80
+    targetPort: {{port}}
+
+  containers:
+  - name: {{appname}}
+    # image: xxxxx
+    imagePullPolicy: Always
+    # args: ["xx", "xx"]
+    # command: ['hello-world'] # 如果Dockerfile指定的CMD没问题的话，这部分可以忽略
+
+    # env:                     # environments
+    #   - ENVA=a
+    tty: false               # whether allocate tty
+    # workingDir: xxx          # working dir
+
+    ports:
+    - containerPort: {{port}}
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: {{port}}
+      initialDelaySeconds: 10
+      timeoutSeconds: 10

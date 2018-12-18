@@ -1,0 +1,23 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  retry: 2
+  image: yuyang0/kae-cli:latest
+  script:
+    - env
+    - kae app:register --force
+    - kae app:build
+  only:
+    - tags
+
+# deploy:
+#   stage: deploy
+#   image: yuyang0/kae-cli:latest
+#   script:
+#     - kae app:deploy --cluster kjy --yaml-name default
+#   only:
+#     - tags
