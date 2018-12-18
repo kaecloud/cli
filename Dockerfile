@@ -1,4 +1,4 @@
-FROM python:3.5.5-alpine
+FROM python:3.6.6-alpine
 MAINTAINER yuyang <yyangplus@gmail.com>
 
 ADD . /tmp/kae
