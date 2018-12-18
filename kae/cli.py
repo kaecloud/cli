@@ -13,7 +13,7 @@ import click
 
 from kae.commands import commands
 from kae.console import ConsoleAPI
-from kae.utils import read_yaml_file
+from kae.utils import read_yaml_file, write_yaml_file
 
 
 @click.group()
@@ -28,6 +28,7 @@ def kae_commands(ctx, config_path, remotename, debug):
         config = {}
         config['auth_token'] = getenv('KAE_AUTH_TOKEN')
         config['kae_url'] = getenv('KAE_URL', 'https://console.gtapp.xyz')
+        write_yaml_file(config, config_path)
         click.echo('config saved to {}'.format(config_path))
 
     if debug:

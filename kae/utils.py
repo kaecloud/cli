@@ -8,6 +8,7 @@ from __future__ import print_function, division, absolute_import
 import sys
 import os
 import re
+import errno
 from os import getenv
 from contextlib import contextmanager
 
@@ -46,6 +47,16 @@ def debug_log(fmt, *args):
 def fatal(msg):
     click.echo(error(msg))
     sys.exit(1)
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 
 @contextmanager
@@ -176,6 +187,14 @@ def read_yaml_file(path):
     except (OSError, IOError):
         return None
 
+def write_yaml_file(data, path):
+    mkdir_p(os.path.dirname(path))
+    try:
+        with open(path, 'w') as f:
+            yaml.dump(data, f)
+    except (OSError, IOError):
+        return None
+    
 
 def get_specs_text_from_repo(cwd=None):
     try:
