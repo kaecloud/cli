@@ -11,6 +11,7 @@ from os.path import expanduser
 
 import click
 
+from kae import __VERSION__
 from kae.commands import commands
 from kae.console import ConsoleAPI
 from kae.utils import read_yaml_file, write_yaml_file
@@ -50,6 +51,11 @@ for command, function in commands.items():
 @click.group()
 def no_api_commands():
     pass
+
+
+@no_api_commands.command()
+def version():
+    print("KAE version: {}".format(__VERSION__))
 
 
 no_api_commands.command('create-web-app')(create_web_app)

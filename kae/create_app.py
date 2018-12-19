@@ -39,11 +39,13 @@ def _common():
     app_yaml_tpl = Template(resource_string(__name__, "tpl/app.yaml").decode('utf8'))
 
     appname = click.prompt(info('Please enter app name'), type=str)
+    hostname = click.prompt(info('Please enter domain'), type=str)
     port = click.prompt(info('Please enter listen port'), type=int, default=8080)
     replicas = click.prompt(info('Please enter replicas'), type=int, default=1)
 
     mappings = {
         "appname": appname,
+        "hostname": hostname,
         "port": port,
         "replicas": replicas,
     }
