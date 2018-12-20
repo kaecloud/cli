@@ -62,7 +62,7 @@ for command, function in commands.items():
 
 @kae_commands.command()
 def version():
-    print("KAE version: {}".format(__VERSION__))
+    print("KAE version: {}, python: {}".format(__VERSION__, sys.version))
 
 
 def main():

@@ -93,7 +93,7 @@ def build_app(ctx, appname, tag, block):
         pass
 
     if phase.lower() != "finished":
-        click.echo(error("build terminates prematurely."))
+        click.echo(error("Connection is closed prematurely, build task is still running in background and KAE will send you an email after build task finished."))
         raise click.Abort()
     click.echo(info('\nBuild %s %s done.' % (appname, tag)))
 
