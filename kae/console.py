@@ -107,8 +107,10 @@ class ConsoleAPI:
         ws = websocket.create_connection(url, **options)
         ws.send(jsonlib.dumps(json))
         for msg in recv_ws(ws):
-            # print('-----------------')
-            # print(msg)
+            # ignore heartbeat message
+            if msg == "PONG":
+                continue
+
             try:
                 data = jsonlib.loads(msg)
                 yield data
