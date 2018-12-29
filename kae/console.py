@@ -12,9 +12,12 @@ import os
 import pickle
 import logging
 import json as jsonlib
+
+import click
 from requests import Session
 import websocket
 from .errors import ConsoleAPIError
+from .utils import warn
 
 logger = logging.getLogger(__name__)
 
@@ -106,14 +109,17 @@ class ConsoleAPI:
         }
         ws = websocket.create_connection(url, **options)
         ws.send(jsonlib.dumps(json))
+        full_msg = ''
         for msg in recv_ws(ws):
-            # ignore heartbeat message
-            if msg == "PONG":
-                continue
-
+            full_msg += msg
             try:
-                data = jsonlib.loads(msg)
+                data = jsonlib.loads(full_msg)
+                full_msg = ''
                 yield data
+            except jsonlib.JSONDecodeError:
+                click.echo(warn("decode json error"))
+                # json message may stay in multiple websocket packet
+                continue
             except (ValueError, TypeError):
                 raise ConsoleAPIError(500, msg)
 
