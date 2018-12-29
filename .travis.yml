@@ -1,0 +1,18 @@
+sudo: true
+dist: trusty
+jobs:
+  include:
+  - stage: build and push docker image
+    if: tag IS present
+    script:
+    - echo $TRAVIS_TAG
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker build -t kaecloud/cli:latest .
+    - docker tag kaecloud/cli:latest kaecloud/cli:$TRAVIS_TAG
+    - docker images
+    - docker push kaecloud/cli:$TRAVIS_TAG
+    - docker push kaecloud/cli:latest
+env:
+  global:
+  - secure: panfwOK9tq2/V73iQ0INBMaYjy4tlRzaXS89fNRvmQLXPKj6NA05J6k+cwIVcL529Upl5PZs2mHt52EXF8SZTC5vtCwnTa+V/wuBPv+VhWBluFpMcpIyoyBzssu/PmxN2lN4iYKK1J+wwQdZNxvVcD+YapAWexS9AcAenClTlsa1aKX309ALRign7jdteQ0Z8UuJn5WtAtQfFCzjTkcBTYlQXwAe/QfoAS/g9XFolajVd8WIueeGv6GIrVNTWdmy8lMITNKKpVv/s8Krt5H45MCtPItGlw5hu4TlDV6tZwpuKB3w/dGz2kLcm7xLaiCn4288qLQoSFxywrtq3crJzQEymxnumzy+QcxMdIbLh5JAeHJ1nYLA+oZMHD3w8CGVg/gdaM/tqfszpAIIGkIgK3upni+LXOugaGcV9BNzaxoIOvzeI5cU38zqELaPlxOEhQhBgrO4SnB9vlq+IManiYMfFgDoncyZLKPqUtb9aT+KqwxpiJRHmqB3CZM5kSsoU58uve8bylTrW8v+zZvBwdP3K+pvMLYMzZN6OzsgRbZYLq7CemwhjSWknhRAotlOrUf4A8w2qWPIQn0nLUQY4y408qy8D0lwK8PCeoxdc+7u1ftkSWp0nIJItsCFQVMlUroT7if+JTV2s9x1p6Zs2xFWkRM9U7kprzUw3ejs1Hc=
+  - secure: T8cFFIgtlypjMAw9vxPp60WuABA7Qm7ml6Asn2O6KOTZB9IQELORm2Ekc5SWzsIMEwenqjGY6Oz3AB9Mwlzj8ag0+G2R417IYBOstqzPgRVqphNR5Jz8KFxQDQiBOybEqKfDzQG3qHK8sjTuu1TmjXPKSXyR2aNWKjw5A5QlHoMmIOVi3yJnWzKKpnzO3X1I+FbyP23b+uPV8UcwegS3dTbdt+jbE32qFKka43C4BzAgA+upRizf3dOgSSZ62y+aD3lmuNfsz+ERWH90DLw8QwBzKpJBhrpfrgSQYMoV+Ca0JHw6PKJebRMEZgekk/on+82iYKOpN+dUILHHtOcoUkWXjIrDvXq35CKJQIxYBcb2GuO7hi4nbU6WBgt1r8nWE6Qetamq0DH0zWtFeTR0Dt1gtwnV1a9sMw73Nssg4xMQlh41m0tX3kSnuK+pdXe60lFovuNMllTWn6F/ebwnm0bww7x6vDMEpm0sYIj56cz319zhzoelAKVa9+A6tsq7CJ4EsTxzT41s/XBAeSvpud7of3VQ0HvcGIU0Q9PEikmvriO4imkzpgauXF3nz2aTmx1DUMmkXnYSs4ApOOMMonofFczy2DfwaECpxIBuQpGjGjcHXMFf0xT2243OYavv8MzeQPkRHGP8D6xsSGQqYVR6e7gzik+G4BpPypWj1fM=
