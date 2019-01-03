@@ -99,7 +99,7 @@ class ConsoleAPI:
             raise ConsoleAPIError(500, 'BUG: Console did not return json, body {}'.format(resp.text))
         return response
 
-    def request_ws(self, path, params=None, data=None, json=None):
+    def request_ws(self, path, params=None, data=None, json=None, ignore_decode_err=False):
         url = urljoin(self.base, path)
         url = re.sub(r'^http', 'ws', url)
         options = {
@@ -109,17 +109,17 @@ class ConsoleAPI:
         }
         ws = websocket.create_connection(url, **options)
         ws.send(jsonlib.dumps(json))
-        full_msg = ''
         for msg in recv_ws(ws):
-            full_msg += msg
+            # click.echo(warn("++++++") + msg)
             try:
-                data = jsonlib.loads(full_msg)
-                full_msg = ''
+                data = jsonlib.loads(msg)
                 yield data
             except jsonlib.JSONDecodeError:
-                click.echo(warn("decode json error"))
-                # json message may stay in multiple websocket packet
-                continue
+                if ignore_decode_err:
+                    click.echo(warn("decode json error, ignore it"))
+                    continue
+                else:
+                    raise ConsoleAPIError(500, "json decode error {}".format(msg))
             except (ValueError, TypeError):
                 raise ConsoleAPIError(500, msg)
 
@@ -216,7 +216,7 @@ class ConsoleAPI:
             'tag': tag,
             'block': block,
         }
-        return self.request_ws('ws/app/%s/build' % appname, json=payload)
+        return self.request_ws('ws/app/%s/build' % appname, json=payload, ignore_decode_err=True)
 
     def deploy_app(self, appname, tag, cpus=None, memories=None, replicas=None, app_yaml_name=None):
         """deploy app.
