@@ -39,10 +39,9 @@ requires = [
     'prettytable==0.7.2',
     'pyyaml==3.12',
     'reprint==0.5.1',
-    'requests>=2.20.0',
     'tqdm==4.23.4',
-    'websocket-client==0.48.0',
     'jinja2==2.10',
+    'kaelib==0.0.1',
 ]
 root_dir = dirname(abspath(__file__))
 
@@ -50,10 +49,11 @@ setup(
     name='kae',
     version=version,
     description='kubernetes app engine command line tool',
-    long_description=find_readme('README.rst'),
+    long_description=find_readme('README.md'),
+    long_description_content_type='text/markdown',
     author='Yu Yang',
     author_email='yangyu@geetest.com',
-    url='',
+    url='https://github.com/kaecloud/cli',
     include_package_data=True,
     packages=find_packages(root_dir),
     install_requires=requires,

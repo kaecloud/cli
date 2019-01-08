@@ -19,7 +19,7 @@ import yaml
 from click import ClickException
 from reprint import output
 from prettytable import PrettyTable
-from .errors import ConsoleAPIError
+from kaelib import KaeAPIError
 
 _GITLAB_CI_REMOTE_URL_PATTERN = re.compile(r'http://gitlab-ci-token:(.+)@([\.\w]+)/([-\w]+)/([-/\w]+).git')
 
@@ -63,7 +63,7 @@ def mkdir_p(path):
 def handle_console_err():
     try:
         yield
-    except ConsoleAPIError as e:
+    except KaeAPIError as e:
         if e.http_code == 404:
             fatal("resource not found: {}".format(str(e)))
         elif 400 <= e.http_code <= 409:
@@ -194,7 +194,7 @@ def write_yaml_file(data, path):
             yaml.dump(data, f)
     except (OSError, IOError):
         return None
-    
+
 
 def get_specs_text_from_repo(cwd=None):
     try:

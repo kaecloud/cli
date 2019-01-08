@@ -43,6 +43,7 @@ from .job import (
     get_job_log,
 )
 
+from .test import test
 from .create_app import create_web_app
 
 
@@ -80,4 +81,5 @@ commands = {
     'job:log': get_job_log,
 
     'create-web-app': create_web_app,
+    'test': test,
 }

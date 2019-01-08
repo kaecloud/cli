@@ -12,11 +12,11 @@ from os.path import expanduser
 
 import click
 
+from kaelib import KaeAPI
+
 from kae import __VERSION__
 from kae.commands import commands
-from kae.console import ConsoleAPI
 from kae.utils import read_yaml_file, write_yaml_file, error
-from kae.create_app import create_web_app
 
 
 @click.group(invoke_without_command=True)
@@ -37,7 +37,7 @@ def kae_commands(ctx, config_path, remotename, debug, version):
 
     ctx.obj['debug'] = debug
 
-    if ctx.invoked_subcommand not in ("version", "create-web-app"):
+    if ctx.invoked_subcommand not in ("version", "test", "create-web-app"):
         config = read_yaml_file(config_path)
         if not config:
             config = {}
@@ -51,7 +51,7 @@ def kae_commands(ctx, config_path, remotename, debug, version):
 
         if not config['auth_token']:
             raise Exception('KAE_AUTH_TOKEN not found')
-        kae_api = ConsoleAPI(config['kae_url'].strip('/'), auth_token=config['auth_token'])
+        kae_api = KaeAPI(config['kae_url'].strip('/'), auth_token=config['auth_token'])
         ctx.obj['kae_api'] = kae_api
         ctx.obj['remotename'] = remotename
 

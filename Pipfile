@@ -1,7 +1,7 @@
 [[source]]
-url = "https://mirrors.aliyun.com/pypi/simple"
-verify_ssl = true
 name = "pypi"
+verify_ssl = true
+url = "https://pypi.org/simple"
 
 [dev-packages]
 
@@ -10,11 +10,10 @@ click = "*"
 "delegator.py" = "*"
 pyyaml = "*"
 prettytable = "*"
-requests = ">=2.20.0"
 tqdm = "*"
 reprint = "*"
-websocket-client = "*"
 jinja2 = "*"
+kaelib = "*"
 
 [requires]
 python_version = "3.6"
