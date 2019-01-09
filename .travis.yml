@@ -1,17 +1,33 @@
-sudo: true
-dist: trusty
+sudo: false
+language: python
+
+python:
+- '3.6'
+services:
+- docker
+
 jobs:
   include:
   - stage: build and push docker image
     if: tag IS present
     script:
-    - echo $TRAVIS_TAG
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker build -t kaecloud/cli:latest .
-    - docker tag kaecloud/cli:latest kaecloud/cli:$TRAVIS_TAG
-    - docker images
-    - docker push kaecloud/cli:$TRAVIS_TAG
-    - docker push kaecloud/cli:latest
+      - echo $TRAVIS_TAG
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker build -t kaecloud/cli:latest .
+      - docker tag kaecloud/cli:latest kaecloud/cli:$TRAVIS_TAG
+      - docker images
+      - docker push kaecloud/cli:$TRAVIS_TAG
+      - docker push kaecloud/cli:latest
+    deploy:
+      provider: pypi
+      skip_existing: true
+      on:
+        tags: true
+        repo: kaecloud/cli
+      password:
+        secure: QEsBPnPpJyiAQu144lMHVuHx/3E3aOj9FoGwyD2bt/XPtOuiZ7Gj7vCDeb5upeFnLYLwTE+Znv+KVK+f9+Hmh5A8mbgMjADkqroonxG3NAUyFEKDcHvSnn328fItdprDx+EQVadhz8ImWfw5jvOF7f3yaOZ3JBx/jsjbxpkm2xegzeYk5SNNwIfbxI9W14khuzu0hgoiuRmg5JIGOC8owNzbUsBvvbIT7ezy92HqkQEYKhmTg1H+apuW5yie6ZCk5I7mV48Yi02K9gRd50PNDTcxSY2DvL9pYx49zypTapDgBfC1ysPsif2yOSEOqbXY7ucbQt3q+jF8rkx8sefBDcJojeBBfNu6mLXi6sNBplfnXRpOyrxJ74JJemUNPNUhCpBEjnNCVNfTcpI/y0T829r4exV1QmZ0HJjtoSBaSCqMBRIfG0+eBl6OwEt9sk8M7m29OF0rQMHWrSPeWhWloXkM182jdCZskgNBksGcDylVkQMHHE43O9q9qaAAICwrn6x9h56oJ4rkuCE4n3Ec88X3JYs6QWQwLWzPPvZXLRBuyO7QrxaEUFnPtL6PeCce56YaBT35uF33/WSyPXLCLWn4iGqDYOYZwBsTGK4hvCP1TQwUgkNL34AZbqhAC+H8rSq+Y+MGWexa123uuE96uSk38kP55yxTpxxz3+S7Aw4=
+      user:
+        secure: RjumCdnBfJRjG3jRyQNbn/xixnfDL34ZiWp4U1m8D885QExiP6faVcSPlo2530XEiWBrEj6OHKB7TgRtGw+75wn1yp1PV6HFiQwQ8DIT+RG6dEX/induUC+w08S6u6sMJGZjBsECbiKIwLsvLifnei0bJ1E1F3LjBrINxotNuKxKGrcWZgF2O78u4gGJeeqp8EYWO44P6Tci6bk1c+oE/vIcjw8phzQXn/70mgl3C8YgNet87XOvkOoD2L+3bBNYxBVZ8HIcbEdjDLcfBChJKxFbwxJWYPiIiPP/2R5L9Jg8PqNDWlPi4w5ru9chhpIE1M8FuLBCXpw2zqn7Ld08aZ+jpG7rRCIRWaTIxHW03078P+fdkPTd1GuaGeanEa9mayuyL3xTq9499tK9z5KHoGGH0lGf7M059mLcwE55Ljhrw4LvuBIMHAhsjYZWx5bpMDGFaFGPY3mwswe8vtKc0MmiCCDfTOqI1cBj8DqPp5qqq+9oAbV2bcofQS9sRYSuh+WLC21fyVae/DBp7jPaoCMI1Y3QZzt8tzgKGPdP9wET2DmHzm/Q9QjX9JFK2FV1qYDn2ibSYnnFk0JELarjhExAcfNpwzqo2uszI/45bnuiuhGuYF/4pGDY5TK0Spy2Jsp6pYJsTJZw2f6t35tZqmCIYGRk0tBpgUa0aSnofAU=
 env:
   global:
   - secure: panfwOK9tq2/V73iQ0INBMaYjy4tlRzaXS89fNRvmQLXPKj6NA05J6k+cwIVcL529Upl5PZs2mHt52EXF8SZTC5vtCwnTa+V/wuBPv+VhWBluFpMcpIyoyBzssu/PmxN2lN4iYKK1J+wwQdZNxvVcD+YapAWexS9AcAenClTlsa1aKX309ALRign7jdteQ0Z8UuJn5WtAtQfFCzjTkcBTYlQXwAe/QfoAS/g9XFolajVd8WIueeGv6GIrVNTWdmy8lMITNKKpVv/s8Krt5H45MCtPItGlw5hu4TlDV6tZwpuKB3w/dGz2kLcm7xLaiCn4288qLQoSFxywrtq3crJzQEymxnumzy+QcxMdIbLh5JAeHJ1nYLA+oZMHD3w8CGVg/gdaM/tqfszpAIIGkIgK3upni+LXOugaGcV9BNzaxoIOvzeI5cU38zqELaPlxOEhQhBgrO4SnB9vlq+IManiYMfFgDoncyZLKPqUtb9aT+KqwxpiJRHmqB3CZM5kSsoU58uve8bylTrW8v+zZvBwdP3K+pvMLYMzZN6OzsgRbZYLq7CemwhjSWknhRAotlOrUf4A8w2qWPIQn0nLUQY4y408qy8D0lwK8PCeoxdc+7u1ftkSWp0nIJItsCFQVMlUroT7if+JTV2s9x1p6Zs2xFWkRM9U7kprzUw3ejs1Hc=
