@@ -29,7 +29,7 @@ def _docker(args, cwd=None, env=os.environ, capture_output=False, print_stdout=T
     """
 
     cmd = ['docker'] + args
-    env = dict(env, DOCKER_HOST='')
+    env = dict(env)
 
     if capture_output:
         try:
