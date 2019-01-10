@@ -6,6 +6,11 @@ python:
 services:
 - docker
 
+notifications:
+  email:
+    on_failure: always
+    on_success: never
+
 jobs:
   include:
   - stage: build and push docker image
