@@ -18,6 +18,7 @@ from kae import __VERSION__
 from kae.commands import commands
 from kae.utils import read_yaml_file, write_yaml_file, error
 
+__local_commands = ("version", "test", "create-web-app", "build")
 
 @click.group(invoke_without_command=True)
 @click.option('--config-path', default=expanduser('~/.kae/config.yaml'),
@@ -37,7 +38,7 @@ def kae_commands(ctx, config_path, remotename, debug, version):
 
     ctx.obj['debug'] = debug
 
-    if ctx.invoked_subcommand not in ("version", "test", "create-web-app"):
+    if ctx.invoked_subcommand not in __local_commands:
         config = read_yaml_file(config_path)
         if not config:
             config = {}

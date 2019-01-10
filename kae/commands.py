@@ -43,7 +43,7 @@ from .job import (
     get_job_log,
 )
 
-from .test import test
+from .test import test, build_local
 from .create_app import create_web_app
 
 
@@ -82,4 +82,5 @@ commands = {
 
     'create-web-app': create_web_app,
     'test': test,
+    'build': build_local,
 }
