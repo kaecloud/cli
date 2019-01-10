@@ -27,8 +27,11 @@ def test(appname, tag, f, literal):
     repo_dir = os.getcwd()
     if f:
         repo_dir = os.path.dirname(os.path.abspath(f))
-    appname = get_appname(appname=appname)
-    tag = get_git_tag(git_tag=tag)
+
+    appname = get_appname(cwd=repo_dir, appname=appname)
+    tag = get_git_tag(cwd=repo_dir, git_tag=tag, required=False)
+    if tag is None:
+        tag = 'latest'
 
     specs_text = get_specs_text(f, literal)
     if specs_text is None:
