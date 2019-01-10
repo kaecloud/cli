@@ -4,6 +4,16 @@ type: web
 builds:
 - name: {{appname}}
 
+test:
+  builds:
+  - name: {{appname}}
+  entrypoints:
+    - script:
+        - echo test
+      # image: xxx
+      # volumes:
+      #   - /tmp:/tmp
+
 service:
   user: root
   replicas: {{replicas}}

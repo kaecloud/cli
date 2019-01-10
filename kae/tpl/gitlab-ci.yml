@@ -1,14 +1,41 @@
 stages:
-  - build
-  - test
+  - local test
+  - kae build
   - deploy
 
-build:
-  stage: build
-  retry: 2
-  image: yuyang0/kae-cli:latest
+test:
+  services:
+    - docker:dind
+
+  variables:
+    # When using dind service we need to instruct docker, to talk with the
+    # daemon started inside of the service. The daemon is available with
+    # a network connection instead of the default /var/run/docker.sock socket.
+    #
+    # The 'docker' hostname is the alias of the service container as described at
+    # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+    #
+    # Note that if you're using Kubernetes executor, the variable should be set to
+    # tcp://localhost:2375 because of how Kubernetes executor connects services
+    # to the job container
+    DOCKER_HOST: tcp://localhost:2375
+    # When using dind, it's wise to use the overlayfs driver for
+    # improved performance.
+    DOCKER_DRIVER: overlay2
+
+  stage: local test
+  image: kaecloud/cli:latest
+  before_script:
+    - sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+    - apk update
+    - apk add --no-cache git docker
   script:
-    - env
+    - kae test
+
+build:
+  stage: kae build
+  image: kaecloud/cli:latest
+  script:
     - kae app:register --force
     - kae app:build
   only:
@@ -16,7 +43,7 @@ build:
 
 # deploy:
 #   stage: deploy
-#   image: yuyang0/kae-cli:latest
+#   image: kaecloud/cli:latest
 #   script:
 #     - kae app:deploy --cluster kjy --yaml-name default
 #   only:
