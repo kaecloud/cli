@@ -61,7 +61,7 @@ def build_image(name, context, build_args, dockerfile=None, use_cache=True):
             options.append('{}={}'.format(key, val))
     if dockerfile is not None:
         options += ['-f', dockerfile]
-    docker_args = ['build'] + options + ['.']
+    docker_args = ['build'] + options + ['--network', 'host', '.']
     retcode = _docker(docker_args, cwd=context)
     if retcode != 0:
         name = None
@@ -89,6 +89,6 @@ def run_container(image, volumes, cmd_list, name=None):
     retcode = _docker(docker_args)
     if retcode != 0:
         name = None
-        fatal('build failed. See errors above.')
+        fatal('run container failed. See errors above.')
     else:
-        click.echo(info('build succeeded: {}'.format(name)))
+        click.echo(info('run container succeeded: {}'.format(name)))
