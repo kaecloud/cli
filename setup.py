@@ -37,11 +37,11 @@ requires = [
     'click==6.7',
     'delegator.py==0.1.0',
     'prettytable==0.7.2',
-    'pyyaml==3.12',
+    'pyyaml>=4.2b1'
     'reprint==0.5.1',
     'tqdm==4.23.4',
     'jinja2==2.10',
-    'kaelib==0.0.1',
+    'kaelib>=0.0.2a1',
 ]
 root_dir = dirname(abspath(__file__))
 
