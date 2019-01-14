@@ -37,7 +37,7 @@ requires = [
     'click==6.7',
     'delegator.py==0.1.0',
     'prettytable==0.7.2',
-    'pyyaml>=4.2b1'
+    'pyyaml>=4.2b1',
     'reprint==0.5.1',
     'tqdm==4.23.4',
     'jinja2==2.10',
