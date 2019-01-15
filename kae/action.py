@@ -48,7 +48,7 @@ def build_app(ctx, appname, tag, block):
 
     kae = ctx.obj['kae_api']
     gen = kae.build_app(appname, tag, block)
-    phase = None
+    phase = ""
     try:
         m = next(gen)
         while True:
