@@ -322,3 +322,14 @@ def renew(ctx, appname, cluster):
     with handle_console_err():
         kae.renew(appname)
     click.echo(info('Renew %s done.' % (appname, )))
+
+
+@click.argument('appname', required=False)
+@click.pass_context
+def kill_build_task(ctx, appname):
+    kae = ctx.obj['kae_api']
+    appname = get_appname(appname=appname)
+
+    with handle_console_err():
+        kae.kill_build_task(appname)
+    click.echo(info('Kill app %s\'s build task done.' % (appname, )))
