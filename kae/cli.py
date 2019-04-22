@@ -20,6 +20,7 @@ from kae.utils import read_yaml_file, write_yaml_file, error
 
 __local_commands = ("version", "test", "create-web-app", "build")
 
+
 @click.group(invoke_without_command=True)
 @click.option('--config-path', default=expanduser('~/.kae/config.yaml'),
               help='config file, yaml', envvar='KAE_CONFIG_PATH')

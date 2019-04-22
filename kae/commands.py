@@ -43,6 +43,15 @@ from .job import (
     get_job_log,
 )
 
+from .spark import (
+    create_sparkapp,
+    list_sparkapp,
+    delete_sparkapp,
+    restart_sparkapp,
+    get_sparkapp_log,
+    upload,
+)
+
 from .test import test, build_local
 from .create_app import create_web_app
 
@@ -79,6 +88,13 @@ commands = {
     'job:list': list_job,
     'job:delete': delete_job,
     'job:log': get_job_log,
+
+    'spark:create': create_sparkapp,
+    'spark:list': list_sparkapp,
+    'spark:delete': delete_sparkapp,
+    'spark:restart': restart_sparkapp,
+    'spark:log': get_sparkapp_log,
+    'spark:upload': upload,
 
     'create-web-app': create_web_app,
     'test': test,
