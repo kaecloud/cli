@@ -295,3 +295,8 @@ def display_pods(kae, watcher, appname, canary=False, forever=False):
             ready_pods = print_table(pod_map, output_list)
             if forever is False and ready_pods == replicas and ready_pods == len(pod_map):
                 return
+
+
+def abort_if_false(ctx, param, value):
+    if not value:
+        ctx.abort()
