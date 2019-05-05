@@ -38,18 +38,24 @@ from kae.utils import (
 @click.option('--executor-memory', required=False, default='512m')
 @click.option('--executor-cores', type=int, required=False, default=1)
 @click.option('--number-executors', type=int, required=False, default=1)
+@click.option('--selector', required=False, multiple=True, help='Selector')
 @click.option('--comment', required=False, help='comment')
 @click.pass_context
 def create_sparkapp(ctx, mainfile, arguments, appname, apptype, schedule, concurrency_policy,
                     image, pythonversion, conf, sparkversion, mode,
-                    jars, files, py_files, packages, repositories, driver_memory, driver_cores, 
-                    executor_memory, executor_cores, number_executors, comment):
+                    jars, files, py_files, packages, repositories, driver_memory, driver_cores,
+                    executor_memory, executor_cores, number_executors, selector, comment):
     kae = ctx.obj['kae_api']
     sparkConf = {}
+    nodeSelector = {}
 
     for item in conf:
         k, v = item.split('=')
         sparkConf[k] = v
+
+    for item in selector:
+        k, v = item.split('=')
+        nodeSelector[k] = v
 
     data = {
         'appname': appname,
@@ -78,6 +84,9 @@ def create_sparkapp(ctx, mainfile, arguments, appname, apptype, schedule, concur
 
     if sparkConf:
         data['sparkConf'] = sparkConf
+
+    if nodeSelector:
+        data['nodeSelector'] = nodeSelector
 
     if arguments:
         data['arguments'] = list(arguments)
@@ -146,7 +155,7 @@ def list_sparkapp(ctx, raw):
             table.add_row([
                 r['name'], specs_text['apptype'], specs_text['driver']['cpu'], specs_text['driver']['memory'],
                 specs_text['executor']['cpu'], specs_text['executor']['memory'], specs_text['executor']['instances'],
-                r['status'], r['nickname'], r['created'], specs_text['schedule'], specs_text['concurrencyPolicy']
+                r['status'], r['nickname'], r['created'], specs_text.get('schedule', None), specs_text.get('concurrencyPolicy', None)
             ])
 
         click.echo(table)
