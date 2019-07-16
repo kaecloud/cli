@@ -41,7 +41,7 @@ requires = [
     'reprint==0.5.1',
     'tqdm==4.23.4',
     'jinja2==2.10',
-    'kaelib>=0.0.2a2',
+    'kaelib>=0.0.6',
 ]
 root_dir = dirname(abspath(__file__))
 
