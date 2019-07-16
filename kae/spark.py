@@ -13,125 +13,172 @@ from pprint import pprint
 import os
 
 from kae.utils import (
-    abort_if_false, fatal, info, handle_console_err, error
+    abort_if_false, fatal, info, handle_console_err, error, read_yaml_file
 )
 
 
-@click.argument('mainfile', required=True)
+@click.argument('mainFile', required=False)
 @click.argument('arguments', nargs=-1, required=False)
-@click.option('--appname', required=True, help='appname')
-@click.option('--apptype', required=False, default='sparkapplication', help="Valid value are 'sparkapplication' or 'scheduledsparkapplication ")
-@click.option('--schedule', required=False, help='schedule')
-@click.option('--concurrency-policy', default='Allow', help='The concurrency policy, Valid values are `Allow` `Forbid` `Replace`')
-@click.option('--image', required=True, help='image')
-@click.option('--pythonversion', required=False, default='2', help='Specpython version')
-@click.option('--conf', required=False, multiple=True, help='configure')
-@click.option('--sparkversion', required=False, default='2.4.0', help='spark verion')
-@click.option('--mode', required=False, default='client', help='mode')
-@click.option('--jars', required=False, help='jars')
-@click.option('--files', required=False, help='files')
-@click.option('--py-files', required=False, help='pyfiles')
-@click.option('--packages', required=False, help='packages')
-@click.option('--repositories', required=False, help='repositories')
-@click.option('--driver-memory', required=False, default='512m')
-@click.option('--driver-cores', type=int, required=False, default=1)
-@click.option('--executor-memory', required=False, default='512m')
-@click.option('--executor-cores', type=int, required=False, default=1)
-@click.option('--number-executors', type=int, required=False, default=1)
-@click.option('--selector', required=False, multiple=True, help='Selector')
-@click.option('--comment', required=False, help='comment')
+@click.option('-f', help='spec yaml file')
+@click.option('--appname', help='appname')
+@click.option('--apptype', default='sparkapplication', type=click.Choice(['sparkapplication', 'scheduledsparkapplication']), help="app type")
+@click.option('--schedule', help='schedule')
+@click.option('--concurrency-policy', default='Allow', type=click.Choice(['Allow', 'Forbid', 'Replace']), help='The concurrency policy')
+@click.option('--image', help='image')
+@click.option('--pythonVersion', default='3', help='python version')
+@click.option('--conf', multiple=True, help='configure')
+@click.option('--sparkVersion', default='2.4.0', help='spark version')
+@click.option('--mode', default='client', help='mode')
+@click.option('--jars', help='jars')
+@click.option('--files', help='files')
+@click.option('--py-files', help='pyfiles')
+@click.option('--packages', help='packages')
+@click.option('--repositories', help='repositories')
+@click.option('--driver-memory', default='512m')
+@click.option('--driver-cores', type=int, default=1)
+@click.option('--executor-memory', default='512m')
+@click.option('--executor-cores', type=int, default=1)
+@click.option('--number-executors', type=int, default=1)
+@click.option('--selector', multiple=True, help='Selector')
+@click.option('--comment', help='comment')
 @click.pass_context
-def create_sparkapp(ctx, mainfile, arguments, appname, apptype, schedule, concurrency_policy,
+def create_sparkapp(ctx, mainfile, arguments, f, appname, apptype, schedule, concurrency_policy,
                     image, pythonversion, conf, sparkversion, mode,
                     jars, files, py_files, packages, repositories, driver_memory, driver_cores,
                     executor_memory, executor_cores, number_executors, selector, comment):
     kae = ctx.obj['kae_api']
-    sparkConf = {}
-    nodeSelector = {}
+    data = {}
+    required = ['appname', 'image', 'mainfile']
 
-    for item in conf:
-        k, v = item.split('=')
-        sparkConf[k] = v
-
-    for item in selector:
-        k, v = item.split('=')
-        nodeSelector[k] = v
-
-    data = {
-        'appname': appname,
-        'apptype': apptype,
-        'image': image,
-        'pythonVersion': pythonversion,
-        'driver': {
-            'cpu': driver_cores,
-            'memory': driver_memory,
-        },
-        'executor': {
-            'cpu': executor_cores,
-            'memory': executor_memory,
-            'instances': number_executors
-        },
-        'deps': {},
-    }
-
-    if apptype == 'scheduledsparkapplication':
-        if not schedule:
-            fatal('Scheduledsparkapplication must should spec `shedule`')
+    if f:
+        if not os.path.exists(f):
+            fatal('The yaml file not exists!')
         else:
-            data['schedule'] = schedule
-        
-        data['concurrencyPolicy'] = concurrency_policy
+            data = read_yaml_file(f)
 
-    if sparkConf:
-        data['sparkConf'] = sparkConf
+            if not data:
+                fatal('yaml error')
+            else:
+                if not data.get('driver'):
+                    data['driver'] = {
+                        'cpu': 1,
+                        'memory': '512m'
+                    }
 
-    if nodeSelector:
-        data['nodeSelector'] = nodeSelector
+                if not data.get('executor'):
+                    data['executor'] = {
+                        'cpu': 1,
+                        'memory': '512m',
+                        'instances': 1
+                    }
+    else:
+        data = {
+            'appname': appname,
+            'apptype': apptype,
+            'image': image,
+            'pythonVersion': pythonversion,
+            'driver': {
+                'cpu': driver_cores,
+                'memory': driver_memory,
+            },
+            'executor': {
+                'cpu': executor_cores,
+                'memory': executor_memory,
+                'instances': number_executors
+            },
+            'mainfile': mainfile,
+            'comment': comment or ''
+        }
 
-    if arguments:
-        data['arguments'] = list(arguments)
+        sparkConf = {}
+        for item in conf:
+            k, v = item.split('=')
+            sparkConf[k] = v
 
-    jars_name_list = []
-    files_name_list = []
-    pyfiles_name_list = []
-    mainfile_obj = []
+        if sparkConf:
+            data['sparkConf'] = sparkConf
+
+        nodeSelector = {}
+        for item in selector:
+            k, v = item.split('=')
+            nodeSelector[k] = v
+
+        if nodeSelector:
+            data['nodeSelector'] = nodeSelector
+        if arguments:
+            data['arguments'] = list(arguments)
+        if data['apptype'] == 'scheduledsparkapplication':
+            if not schedule:
+                fatal('Scheduledsparkapplication must should spec `shedule`')
+            else:
+                data['schedule'] = schedule
+
+            data['concurrencyPolicy'] = concurrency_policy
+
+        if jars:
+            data['jars'] = jars.split(',')
+        if files:
+            data['files'] = files.split(',')
+        if py_files:
+            data['py-files'] = py_files.split(',')
+
+    for require_key in required:
+        if require_key not in data.keys():
+            fatal('Miss required argument {}'.format(require_key))
+
+    data.setdefault('deps', {})
+
     jars_obj = []
     files_obj = []
     pyfiles_obj = []
 
-    if not os.path.exists(mainfile):
-        fatal('Main file {} not exist'.format(mainfile))
-    else:
-        mainfile_obj.append(('file', open(mainfile, 'rb')))
+    remote_jars = []
+    remote_files = []
+    remote_pyfiles = []
 
-    if jars:
-        for jar in jars.split(','):
-            if not os.path.exists(jar):
-                fatal('Jar {} not exist'.format(jar))
-            else:
-                jars_obj.append(('file', open(jar, 'rb')))
-                jars_name_list.append(jar)
-    if files:
-        for _file in files.split(','):
-            if not os.path.exists(_file):
-                fatal('File {} not exist'.format(_file))
-            else:
-                files_obj.append(('file', open(_file, 'rb')))
-                files_name_list.append(_file)
-    if py_files:
-        for pyfile in py_files.split(','):
-            if not os.path.exists(pyfile):
-                fatal('Pyfile {} not exist'.format(pyfile))
-            else:
-                pyfiles_obj.append(('file', open(pyfile, 'rb')))
-                pyfiles_name_list.append(pyfile)
+    # file_type_map = {
+    #     'mainfile': 'mainApplicationFile',
+    #     'jars': 'jars',
+    #     'files': 'files',
+    #     'py-files': 'pyFiles'
+    # }
+    remote_file_protocol = ['s3a://', 'hdfs://']
+
+    def pre_upload(path):
+        protocol = path.split('//')[0] + '//'
+        if protocol in remote_file_protocol:
+            return False
+        if not os.path.exists(path):
+            fatal('File {} not exist'.format(path))
+        return True
+
+    if pre_upload(data['mainfile']):
+        mainfile_obj = (('file', open(data['mainfile'], 'rb')), )
+        data['mainApplicationFile'] = kae.upload(data['appname'], 'mainfile', mainfile_obj)['data']['path']
+    else:
+        data['mainApplicationFile'] = data['mainfile']
+
+    for jar_path in data.get('jars', []):
+        if pre_upload(jar_path):
+            jars_obj.append(('file', open(jar_path, 'rb')))
+        else:
+            remote_jars.append(jar_path)
+    for file_path in data.get('files', []):
+        if pre_upload(file_path):
+            files_obj.append(('file', open(file_path, 'rb')))
+        else:
+            remote_files.append(file_path)
+    for pyfile_path in data.get('py-files', []):
+        if pre_upload(pyfile_path):
+            pyfiles_obj.append(('file', open(pyfile_path, 'rb')))
+        else:
+            remote_pyfiles.append(pyfile_path)
+
+    data['deps']['jars'] = kae.upload(data['appname'], 'jars', jars_obj)['data']['path'] + remote_jars
+    data['deps']['files'] = kae.upload(data['appname'], 'files', files_obj)['data']['path'] + remote_files
+    data['deps']['pyFiles'] = kae.upload(data['appname'], 'pyfiles', pyfiles_obj)['data']['path'] + remote_pyfiles
 
     with handle_console_err():
-        data['mainApplicationFile'] = kae.upload(appname, 'mainfile', mainfile_obj)['data']['path']
-        data['deps']['jars'] = kae.upload(appname, 'jars', jars_obj)['data']['path']
-        data['deps']['files'] = kae.upload(appname, 'files', files_obj)['data']['path']
-        data['deps']['pyFiles'] = kae.upload(appname, 'pyfiles', pyfiles_obj)['data']['path']
-
         kae.create_sparkapp(data=data)
 
     click.echo(info('Create sparkapp done.'))
@@ -147,10 +194,10 @@ def list_sparkapp(ctx, raw):
     if raw:
         pprint(sparkapps)
     else:
-        table = PrettyTable(['name', 'type', 'd-cores', 'd-memory', 'e-cores', 'e-memory', 'e-number', 
+        table = PrettyTable(['name', 'type', 'd-cores', 'd-memory', 'e-cores', 'e-memory', 'e-number',
                             'status', 'user', 'craeted', 'schedule', 'concurrency'])
         for r in sparkapps:
-            specs_text = yaml.load(r['specs_text'])
+            specs_text = yaml.safe_load(r['specs_text'])
 
             table.add_row([
                 r['name'], specs_text['apptype'], specs_text['driver']['cpu'], specs_text['driver']['memory'],
@@ -162,10 +209,24 @@ def list_sparkapp(ctx, raw):
 
 
 @click.option('--yes', is_flag=True, callback=abort_if_false, expose_value=False, prompt='Are you sure you want to delete the app?')
-@click.argument('appname', required=True)
+@click.argument('appname', required=False)
+@click.option('-f', help='spec yaml file')
 @click.pass_context
-def delete_sparkapp(ctx, appname):
+def delete_sparkapp(ctx, appname, f):
     kae = ctx.obj['kae_api']
+
+    if f:
+        if not os.path.exists(f):
+            fatal('The yaml file not exists!')
+        else:
+            data = read_yaml_file(f)
+
+            if not data:
+                fatal('yaml error')
+
+            else:
+                appname = data['appname']
+
     with handle_console_err():
         result = kae.delete_sparkapp(appname)
 

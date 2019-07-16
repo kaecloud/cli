@@ -160,7 +160,7 @@ def get_appname(cwd=None, appname=None, required=True):
         return appname
     try:
         with open(os.path.join(cwd or os.getcwd(), 'app.yaml'), 'r') as f:
-            specs = yaml.load(f)
+            specs = yaml.safe_load(f)
     except IOError:
         if required:
             fatal('appname not specified, check app.yaml or pass argument to it.')
@@ -183,9 +183,10 @@ def read_json_file(path):
 def read_yaml_file(path):
     try:
         with open(path) as f:
-            return yaml.load(f)
+            return yaml.safe_load(f)
     except (OSError, IOError):
         return None
+
 
 def write_yaml_file(data, path):
     mkdir_p(os.path.dirname(path))
