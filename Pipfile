@@ -14,6 +14,7 @@ tqdm = "*"
 reprint = "*"
 jinja2 = "*"
 kaelib = "*"
+python-keycloak = "*"
 
 [requires]
 python_version = "3.6"

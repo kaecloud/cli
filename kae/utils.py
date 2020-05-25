@@ -11,7 +11,9 @@ import re
 import errno
 from os import getenv
 from contextlib import contextmanager
+from urllib.parse import urlparse
 
+from keycloak import KeycloakOpenID
 import click
 import delegator
 import json
@@ -301,3 +303,24 @@ def display_pods(kae, watcher, appname, canary=False, forever=False):
 def abort_if_false(ctx, param, value):
     if not value:
         ctx.abort()
+
+
+def get_sso_token(user, password, sso_host="localhost", realm="kae", client_id="kae-cli"):
+    o = urlparse(sso_host)
+    if not o.scheme:
+        # url is a host
+        url = f'https://{sso_host}/auth/'
+    else:
+        url = sso_host
+
+    # Configure client
+    keycloak_openid = KeycloakOpenID(server_url=url,
+                        client_id=client_id,
+                        realm_name=realm,
+                        # client_secret_key="secret",
+                        verify=True)
+
+    # Get Token
+    tokenInfo = keycloak_openid.token(user, password)
+    # token = keycloak_openid.token("user", "password", totp="012345")
+    return tokenInfo.get('access_token')

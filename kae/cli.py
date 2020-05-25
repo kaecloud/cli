@@ -16,7 +16,7 @@ from kaelib import KaeAPI
 
 from kae import __VERSION__
 from kae.commands import commands
-from kae.utils import read_yaml_file, write_yaml_file, error
+from kae.utils import read_yaml_file, write_yaml_file, error, get_sso_token
 
 __local_commands = ("version", "test", "create-web-app", "build")
 
@@ -43,7 +43,12 @@ def kae_commands(ctx, config_path, remotename, debug, version):
         config = read_yaml_file(config_path)
         if not config:
             config = {}
-            config['auth_token'] = getenv('KAE_AUTH_TOKEN')
+            config['sso_username'] = getenv('SSO_USERNAME')
+            config['sso_password'] = getenv('SSO_PASSWORD')
+            config['sso_host'] = getenv('SSO_HOST')
+            config['sso_realm'] = getenv("SSO_REALM", "kae")
+            config['sso_client_id'] = getenv("SSO_CLIENT_ID", "kae-cli")
+
             config['kae_url'] = getenv('KAE_URL', 'https://console.gtapp.xyz')
             write_yaml_file(config, config_path)
             click.echo('config saved to {}'.format(config_path))
@@ -51,9 +56,14 @@ def kae_commands(ctx, config_path, remotename, debug, version):
         if debug:
             logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] [%(process)d] [%(levelname)s] [%(filename)s @ %(lineno)s]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S %z')
 
-        if not config['auth_token']:
-            raise Exception('KAE_AUTH_TOKEN not found')
-        kae_api = KaeAPI(config['kae_url'].strip('/'), auth_token=config['auth_token'])
+        token = get_sso_token(
+            user=config['sso_username'],
+            password=config['sso_password'],
+            sso_host=config['sso_host'],
+            realm=config.get('sso_realm', "kae"),
+            client_id=config.get('sso_client_id', "kae-cli")
+        )
+        kae_api = KaeAPI(config['kae_url'].strip('/'), access_token=token)
         ctx.obj['kae_api'] = kae_api
         ctx.obj['remotename'] = remotename
 
