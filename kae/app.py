@@ -231,14 +231,29 @@ def get_config(ctx, appname, cluster):
     appname = get_appname(appname=appname)
     with handle_console_err():
         d = kae.get_config(appname)
-    if isinstance(d, dict):
-        for k, v in d.items():
+    newest = d.get("newest")
+    current = d.get("current")
+
+    click.echo(info("------------------ newest ----------------------"))
+    if isinstance(newest, dict):
+        for k, v in newest.items():
             click.echo(info("key:"))
             click.echo(k)
             click.echo(info("data:"))
             click.echo(v)
     else:
-        click.echo(d)
+        click.echo(newest)
+
+    click.echo("\n\n")
+    click.echo(info("----------------- current --------------------"))
+    if isinstance(current, dict):
+        for k, v in current.items():
+            click.echo(info("key:"))
+            click.echo(k)
+            click.echo(info("data:"))
+            click.echo(v)
+    else:
+        click.echo(current)
 
 
 @click.argument('appname', required=False)
