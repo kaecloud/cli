@@ -76,18 +76,7 @@ def build_app(ctx, appname, tag, block):
                 click.echo(error(str(raw_data)))
                 raise click.Abort()
 
-            if phase.lower() == "pushing":
-                if len(raw_data) == 1 and 'status' in raw_data:
-                    click.echo(raw_data['status'])
-                elif 'id' in raw_data and 'status' in raw_data:
-                    # TODO: make the output like docker push
-                    click.echo("{}:{}".format(raw_data['id'], raw_data['status']))
-                elif 'digest' in raw_data:
-                    click.echo("{}: digest: {} size: {}".format(raw_data.get('status'), raw_data['digest'], raw_data.get('size')))
-                else:
-                    click.echo(str(m))
-            else:
-                click.echo(m['msg'])
+            click.echo(m['msg'], nl=False)
             m = next(gen)
     except StopIteration:
         pass
@@ -155,25 +144,21 @@ def deploy_app_canary(ctx, appname, cluster, tag, cpus, memories, replicas, yaml
 
 
 @click.argument('appname', required=False)
-@click.option('--cpus', multiple=True, help='how many CPUs to set, format `idx,req,limit` or `req,limit`, e.g. --cpu 0,1.5,2')
-@click.option('--memories', multiple=True, help='how much memory to set, format `idx,req,limit` or `req,limit` e.g. --memory 0,64M,256M')
 @click.option('--replicas', default=0, type=int, help='repliocas of app, e.g. --replicas 2')
 @click.option('--cluster', default='default', help='cluster name')
 @click.option('--watch', default=False, is_flag=True, help='watch pods')
 @click.pass_context
-def scale_app(ctx, appname, cpus, memories, replicas, cluster, watch):
+def scale_app(ctx, appname, replicas, cluster, watch):
     appname = get_appname(appname=appname)
 
-    if not (cpus or memories or replicas):
-        fatal("you must at least sapecify one of cpu memory and replicas")
-    cpus_dict = cfg_list_to_dict(cpus)
-    memories_dict = cfg_list_to_dict(memories)
+    if replicas <= 0:
+        fatal("replicas should be a positive integer")
 
     kae = ctx.obj['kae_api']
 
     kae.set_cluster(cluster)
     with handle_console_err():
-        kae.scale_app(appname, cpus_dict, memories_dict, replicas)
+        kae.scale_app(appname, replicas)
 
     if watch:
         watcher = kae.get_app_pods(appname, watch=True)
