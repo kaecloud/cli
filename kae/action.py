@@ -94,9 +94,11 @@ def build_app(ctx, appname, tag, block):
 @click.option('--replicas', type=int, help='repliocas of app, e.g. --replicas 2')
 @click.option('--yaml-name', default='default', help="app yaml name")
 @click.option('--cluster', default='default', help='cluster name')
+@click.option('--use-newest-config', default=False, is_flag=True, help='use newest config')
 @click.option('--watch', default=False, is_flag=True, help='watch pods')
 @click.pass_context
-def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name, watch):
+def deploy_app(ctx, appname, cluster, tag, cpus, memories,
+               replicas, yaml_name, use_newest_config, watch):
     tag = get_git_tag(git_tag=tag)
     appname = get_appname(appname=appname)
 
@@ -108,7 +110,8 @@ def deploy_app(ctx, appname, cluster, tag, cpus, memories, replicas, yaml_name, 
 
     with handle_console_err():
         kae.deploy_app(appname, tag, cpus_dict, memories_dict,
-                       replicas, app_yaml_name=yaml_name)
+                       replicas, app_yaml_name=yaml_name,
+                       use_newest_config=use_newest_config)
     if watch:
         watcher = kae.get_app_pods(appname, watch=True)
         display_pods(kae, watcher, appname)
