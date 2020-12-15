@@ -26,10 +26,10 @@ __local_commands = ("version", "test", "create-web-app", "build")
               help='config file, yaml', envvar='KAE_CONFIG_PATH')
 @click.option('--remotename', default='origin', help='git remote name, default to origin', envvar='KAE_REPO_NAME')
 @click.option('--debug', default=False, help='enable debug output', is_flag=True)
-@click.option('--ignore-totp', default=False, help='enable debug output', is_flag=True)
+@click.option('--totp', default=None, help='time-based one time password')
 @click.option('-v', '--version', default=False, help='show version', is_flag=True)
 @click.pass_context
-def kae_commands(ctx, config_path, remotename, debug, ignore_totp, version):
+def kae_commands(ctx, config_path, remotename, debug, totp, version):
     if ctx.invoked_subcommand is None:
         if version:
             print("KAE version: {}".format(__VERSION__))
@@ -57,9 +57,6 @@ def kae_commands(ctx, config_path, remotename, debug, ignore_totp, version):
         if debug:
             logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] [%(process)d] [%(levelname)s] [%(filename)s @ %(lineno)s]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S %z')
 
-        totp = None
-        if not ignore_totp:
-            totp = click.prompt("Please enter totp", type=str)
         token = get_sso_token(
             user=config['sso_username'],
             password=config['sso_password'],
