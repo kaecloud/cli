@@ -305,7 +305,7 @@ def abort_if_false(ctx, param, value):
         ctx.abort()
 
 
-def get_sso_token(user, password, sso_host="localhost", realm="kae", client_id="kae-cli"):
+def get_sso_token(user, password, sso_host="localhost", realm="kae", client_id="kae-cli", totp=None):
     o = urlparse(sso_host)
     if not o.scheme:
         # url is a host
@@ -321,6 +321,6 @@ def get_sso_token(user, password, sso_host="localhost", realm="kae", client_id="
                         verify=True)
 
     # Get Token
-    tokenInfo = keycloak_openid.token(user, password)
+    tokenInfo = keycloak_openid.token(user, password, totp=totp)
     # token = keycloak_openid.token("user", "password", totp="012345")
     return tokenInfo.get('access_token')
